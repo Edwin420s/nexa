@@ -17,6 +17,11 @@ export default function Navbar() {
             </Link>
             <div className="hidden md:block ml-10">
               <div className="flex items-baseline space-x-4">
+                <div className="hidden md:flex items-center space-x-4">
+                <ThemeToggle /> {/* Add this line */}
+                <Link href="/login" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
+                    Sign In
+                      </Link>
                 <Link href="/dashboard" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                   Dashboard
                 </Link>
