@@ -20,7 +20,6 @@ export default function LoginPage() {
     
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsLoading(false)
     router.push('/dashboard')
   }
 
@@ -30,16 +29,12 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        {/* Logo & Header */}
-        <div className="text-center">
-          <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Nexa
-            </h1>
-          </Link>
-          <h2 className="mt-6 text-3xl font-bold">Welcome back</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950 p-4">
+      <Suspense fallback={
+        <div className="w-full max-w-md p-8 space-y-8 bg-gray-900 rounded-xl border border-gray-800">
+          <div className="flex justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+          </div>
           <p className="mt-2 text-gray-400">
             Sign in to your account to continue
           </p>
