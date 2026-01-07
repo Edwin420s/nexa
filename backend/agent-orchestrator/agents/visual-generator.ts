@@ -217,3 +217,110 @@ Make the designs professional, clear, and aligned with modern design principles.
           } else if (item.toLowerCase().startsWith('elements:')) {
             // Elements might continue on next lines
             const elements: string[] = [];
+            let j = i + 1;
+            while (j < lines.length && lines[j].startsWith('  -')) {
+              elements.push(lines[j].substring(3).trim());
+              j++;
+            }
+            currentAsset.specifications!.elements = elements;
+            i = j - 1; // Skip processed lines
+          }
+        } else if (currentSection === 'implementation') {
+          if (item.toLowerCase().startsWith('tools:')) {
+            const tools = item.substring(6).split(',').map(t => t.trim());
+            currentAsset.implementation!.tools = tools;
+          } else if (item.toLowerCase().startsWith('format:')) {
+            currentAsset.implementation!.format = item.substring(7).trim();
+          }
+        }
+      }
+
+      // Parse code blocks
+      const codeBlockMatch = line.match(/^```(\w*)$/);
+      if (codeBlockMatch && currentAsset && currentSection === 'implementation') {
+        const language = codeBlockMatch[1];
+        i++;
+        const codeLines: string[] = [];
+        while (i < lines.length && !lines[i].startsWith('```')) {
+          codeLines.push(lines[i]);
+          i++;
+        }
+        const code = codeLines.join('\n');
+        currentAsset.implementation!.code = code;
+      }
+    }
+
+    // Add last asset
+    if (currentAsset && this.isValidAsset(currentAsset)) {
+      assets.push(currentAsset as VisualAsset);
+    }
+
+    // Filter assets by requested types if specified
+    const filteredAssets = assetTypes.length > 0
+      ? assets.filter(asset => assetTypes.includes(asset.type))
+      : assets;
+
+    return {
+      assets: filteredAssets,
+      overallDescription: overallDescription || 'Visual assets generated based on requirements.'
+    };
+  }
+
+  private normalizeAssetType(type: string): VisualAsset['type'] {
+    const normalized = type.toLowerCase();
+    if (normalized.includes('diagram')) return 'diagram';
+    if (normalized.includes('chart') || normalized.includes('graph')) return 'chart';
+    if (normalized.includes('ui') || normalized.includes('mockup') || normalized.includes('wireframe')) return 'ui';
+    if (normalized.includes('logo')) return 'logo';
+    if (normalized.includes('icon')) return 'icon';
+    return 'diagram'; // Default
+  }
+
+  private isValidAsset(asset: Partial<VisualAsset>): boolean {
+    return !!asset.type && !!asset.description && !!asset.specifications && !!asset.implementation;
+  }
+
+  async generateArchitectureDiagram(systemDescription: string): Promise<VisualAsset> {
+    const prompt = `Generate a system architecture diagram for:
+
+${systemDescription}
+
+Provide:
+1. Diagram type and description
+2. Key components and their relationships
+3. Recommended visualization style
+4. Mermaid.js code for the diagram`;
+
+    const response = await this.gemini.generateContent(prompt, {
+      model: 'gemini-3-pro',
+      temperature: 0.7,
+      maxTokens: 2048
+    });
+
+    // Parse for Mermaid.js code
+    const mermaidMatch = response.content.match(/```mermaid\n([\s\S]*?)\n```/);
+    const mermaidCode = mermaidMatch ? mermaidMatch[1] : '';
+
+    return {
+      type: 'diagram',
+      description: 'System architecture diagram',
+      specifications: {
+        style: 'technical',
+        colors: ['#2563eb', '#7c3aed', '#059669'],
+        elements: ['Components', 'Connections', 'Data flow', 'External services']
+      },
+      implementation: {
+        tools: ['Mermaid.js', 'draw.io', 'Figma'],
+        format: 'SVG/PNG',
+        code: mermaidCode || response.content
+      }
+    };
+  }
+
+  async generateUIMockups(requirements: string): Promise<VisualAsset[]> {
+    const result = await this.generateVisuals(requirements, ['ui']);
+    return result.assets.filter(asset => asset.type === 'ui');
+  }
+}
+
+export const visualGeneratorAgent = new VisualGeneratorAgent();
