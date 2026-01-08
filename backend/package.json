@@ -18,6 +18,14 @@
     "migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "migrate:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js"
+     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
+    "test:watch": "NODE_ENV=test jest --watch",
+    "test:coverage": "NODE_ENV=test jest --coverage"
+    "lint": "eslint . --ext .ts",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,json,md}\""
+  }
+  }
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.0",

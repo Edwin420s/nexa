@@ -27,6 +27,10 @@ module.exports = {
     '!**/*.d.ts',
     '!jest.config.js',
     '!**/index.ts'
+     'src/**/*.ts',
+    '!src/**/*.d.ts',
+    '!src/index.ts',
+    '!src/server.ts'
   ],
   coverageDirectory: 'coverage',
   coverageReporters: ['text', 'lcov', 'html'],
