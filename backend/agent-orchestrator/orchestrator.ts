@@ -1,8 +1,54 @@
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
 import { Project, IProject } from '../models/Project';
+=======
+import { Project, IProject, IAgentOutput } from '../models/Project';
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 import { getGeminiService } from '../services/gemini';
 import { ConfidenceService } from '../services/confidence';
 import { getStreamingService } from '../services/streaming';
 import logger from '../utils/logger';
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
+=======
+import { v4 as uuidv4 } from 'uuid';
+import { EventEmitter } from 'events';
+
+// Define custom events
+export const OrchestratorEvents = {
+  TASK_STARTED: 'task_started',
+  TASK_COMPLETED: 'task_completed',
+  TASK_FAILED: 'task_failed',
+  AGENT_STARTED: 'agent_started',
+  AGENT_COMPLETED: 'agent_completed',
+  AGENT_OUTPUT: 'agent_output',
+  PROJECT_UPDATED: 'project_updated'
+} as const;
+
+// Custom error classes
+export class OrchestratorError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly details?: any
+  ) {
+    super(message);
+    this.name = 'OrchestratorError';
+  }
+}
+
+export class ValidationError extends OrchestratorError {
+  constructor(message: string, details?: any) {
+    super(message, 'VALIDATION_ERROR', details);
+    this.name = 'ValidationError';
+  }
+}
+
+export class AgentError extends OrchestratorError {
+  constructor(message: string, details?: any) {
+    super(message, 'AGENT_ERROR', details);
+    this.name = 'AgentError';
+  }
+}
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 
 export interface AgentTask {
   agentName: string;
@@ -22,6 +68,7 @@ export interface OrchestratorConfig {
   timeoutMs: number;
 }
 
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
 export class AgentOrchestrator {
   private config: OrchestratorConfig = {
     maxConcurrentAgents: 3,
@@ -53,6 +100,94 @@ export class AgentOrchestrator {
       // Execute agents based on project configuration
       const tasks = this.generateTasksFromProject(project);
       const results = await this.executeAgentTasks(projectId, tasks);
+=======
+export class AgentOrchestrator extends EventEmitter {
+  private config: OrchestratorConfig;
+  private activeTasks: Map<string, { projectId: string; taskId: string; startTime: Date }> = new Map();
+  private activeProjects: Map<string, boolean> = new Map();
+  private taskQueue: Array<{ task: AgentTask; projectId: string; resolve: (value: any) => void; reject: (error: Error) => void }> = [];
+  private isProcessingQueue = false;
+
+  constructor(config: Partial<OrchestratorConfig> = {}) {
+    super();
+    this.config = {
+      maxConcurrentAgents: config.maxConcurrentAgents || 3,
+      confidenceThreshold: Math.min(Math.max(config.confidenceThreshold || 0.7, 0.1), 1.0),
+      maxIterations: Math.min(Math.max(config.maxIterations || 10, 1), 100),
+      timeoutMs: Math.min(Math.max(config.timeoutMs || 300000, 60000), 1800000) // 1-30 minutes
+    };
+    
+    // Set up event listeners
+    this.setupEventListeners();
+  }
+
+  private setupEventListeners() {
+    // Handle uncaught errors in event emitters
+    this.on('error', (error) => {
+      logger.error('Orchestrator error:', error);
+    });
+  }
+
+  private validateTask(task: AgentTask) {
+    if (!task.agentName || typeof task.agentName !== 'string') {
+      throw new ValidationError('Agent name is required and must be a string');
+    }
+
+    if (!task.prompt || typeof task.prompt !== 'string') {
+      throw new ValidationError('Prompt is required and must be a string');
+    }
+
+    if (task.model && typeof task.model !== 'string') {
+      throw new ValidationError('Model must be a string if provided');
+    }
+
+    if (task.tools && !Array.isArray(task.tools)) {
+      throw new ValidationError('Tools must be an array if provided');
+    }
+  }
+
+  async executeProject(projectId: string, tasks: AgentTask[] = []): Promise<void> {
+    const taskId = uuidv4();
+    const startTime = new Date();
+    
+    try {
+      // Validate project ID
+      if (!projectId || typeof projectId !== 'string') {
+        throw new ValidationError('Valid project ID is required');
+      }
+
+      // Check if project is already being executed
+      if (this.activeProjects.has(projectId)) {
+        throw new OrchestratorError(
+          `Project ${projectId} is already being executed`,
+          'PROJECT_ALREADY_RUNNING'
+        );
+      }
+
+      // Mark project as active
+      this.activeProjects.set(projectId, true);
+      this.activeTasks.set(taskId, { projectId, taskId, startTime });
+
+      // Get project from database
+      const project = await Project.findById(projectId);
+      if (!project) {
+        throw new OrchestratorError(
+          `Project ${projectId} not found`,
+          'PROJECT_NOT_FOUND'
+        );
+      }
+
+      // Update project status and emit event
+      project.status = 'running';
+      project.startedAt = new Date();
+      await project.save();
+
+      this.emit(OrchestratorEvents.PROJECT_UPDATED, {
+        projectId,
+        status: 'running',
+        startedAt: project.startedAt
+      });
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 
       // Process results
       await this.processResults(projectId, results);
