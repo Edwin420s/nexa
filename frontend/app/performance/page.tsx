@@ -1,8 +1,17 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+<<<<<<< D:\Projects\New folder (2)\nexa\frontend\app\performance\page.tsx
 import { Activity, Cpu, Zap, Database, Clock, DollarSign, TrendingUp, AlertCircle, BarChart3, Server } from 'lucide-react'
 import AnalyticsChart from '@/components/AnalyticsChart'
+=======
+import { Activity, Cpu, Database, Clock, DollarSign, AlertCircle } from 'lucide-react'
+import { PerformanceMetricsGrid } from '@/components/performance/PerformanceMetricsGrid'
+import { RealTimeCharts } from '@/components/performance/RealTimeCharts'
+import { AgentPerformanceList } from '@/components/performance/AgentPerformanceList'
+import { AlertsSection } from '@/components/performance/AlertsSection'
+import { PerformanceRecommendations } from '@/components/performance/PerformanceRecommendations'
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-2adb6d3b\frontend\app\performance\page.tsx
 
 export default function PerformancePage() {
   const [timeRange, setTimeRange] = useState('hour')
@@ -158,6 +167,7 @@ export default function PerformancePage() {
     }
   ]
 
+<<<<<<< D:\Projects\New folder (2)\nexa\frontend\app\performance\page.tsx
   const getAlertColor = (severity: string) => {
     switch (severity) {
       case 'high': return 'bg-red-500/20 text-red-400 border-red-500/30'
@@ -166,6 +176,31 @@ export default function PerformancePage() {
       default: return 'bg-gray-500/20 text-gray-400 border-gray-500/30'
     }
   }
+=======
+  const recommendations = [
+    {
+      area: 'Agent Scaling',
+      recommendation: 'Add 2 more Builder agents',
+      impact: 'Reduce latency by 45%',
+      effort: 'Low',
+      priority: 'High' as const
+    },
+    {
+      area: 'Model Optimization',
+      recommendation: 'Use Gemini 2.5 Flash for non-critical tasks',
+      impact: 'Reduce costs by 28%',
+      effort: 'Medium' as const,
+      priority: 'Medium' as const
+    },
+    {
+      area: 'Caching Strategy',
+      recommendation: 'Implement response caching for common queries',
+      impact: 'Improve throughput by 35%',
+      effort: 'High' as const,
+      priority: 'High' as const
+    }
+  ];
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-2adb6d3b\frontend\app\performance\page.tsx
 
   return (
     <div className="min-h-screen bg-gray-950">
@@ -197,6 +232,7 @@ export default function PerformancePage() {
             </div>
           </div>
 
+<<<<<<< D:\Projects\New folder (2)\nexa\frontend\app\performance\page.tsx
           {/* Performance Metrics Grid */}
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             {performanceMetrics.map((metric, idx) => {
@@ -429,6 +465,26 @@ export default function PerformancePage() {
             </div>
           </div>
         </div>
+=======
+          <PerformanceMetricsGrid metrics={performanceMetrics} />
+        </div>
+
+        <div className="grid lg:grid-cols-2 gap-8 mb-8">
+          <RealTimeCharts 
+            realTimeData={realTimeData} 
+            activeMetric={activeMetric} 
+            onMetricChange={setActiveMetric} 
+          />
+
+          <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
+            <h2 className="text-xl font-semibold mb-6">Agent Performance</h2>
+            <AgentPerformanceList agents={agentPerformance} />
+          </div>
+        </div>
+
+        <AlertsSection alerts={alerts} />
+        <PerformanceRecommendations recommendations={recommendations} />
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-2adb6d3b\frontend\app\performance\page.tsx
       </div>
     </div>
   )
