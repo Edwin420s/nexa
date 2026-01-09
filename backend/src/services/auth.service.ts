@@ -94,9 +94,9 @@ export class AuthService {
       email: user.email
     };
 
-    return jwt.sign(payload, JWT_SECRET, {
-      expiresIn: JWT_EXPIRES_IN
-    });
+    const secret: jwt.Secret = JWT_SECRET;
+    const options: jwt.SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
+    return jwt.sign(payload, secret, options);
   }
 
   /**

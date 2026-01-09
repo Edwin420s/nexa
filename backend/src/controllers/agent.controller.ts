@@ -11,7 +11,7 @@ const agentOrchestrator = new AgentOrchestrator();
 export const executeAgent = async (req: Request, res: Response) => {
   try {
     const { projectId, agentName, prompt } = req.body;
-    const userId = req.user.id;
+    const userId = (req as any).user.id;
 
     // Find the project
     const project = await Project.findOne({

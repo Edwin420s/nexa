@@ -236,3 +236,5 @@ export class ValidationMiddleware {
     return false;
   }
 }
+
+export const validate = ValidationMiddleware.validate;

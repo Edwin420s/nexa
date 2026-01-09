@@ -114,7 +114,7 @@ export class GeminiService {
             description: tool.description,
             parameters: tool.parameters
           }]
-        }))
+        })) as any
       });
 
       const result = await model.generateContent(prompt);
