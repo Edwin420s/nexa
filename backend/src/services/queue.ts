@@ -1,4 +1,4 @@
-import Queue from 'bull';
+import Queue, { Job } from 'bull';
 import IORedis from 'ioredis';
 import { getAgentOrchestrator } from '../agent-orchestrator/orchestrator';
 import { Project } from '../models/Project';
@@ -20,8 +20,8 @@ export interface JobResult {
 }
 
 export class JobQueue {
-  private projectQueue: Queue;
-  private agentQueue: Queue;
+  private projectQueue: Queue.Queue;
+  private agentQueue: Queue.Queue;
   private redisClient: IORedis;
 
   constructor() {
@@ -33,7 +33,16 @@ export class JobQueue {
 
     // Initialize queues
     this.projectQueue = new Queue('project-execution', {
-      redis: this.redisClient,
+      createClient: (type) => {
+        switch (type) {
+          case 'client':
+            return this.redisClient;
+          case 'subscriber':
+            return new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', { maxRetriesPerRequest: null, enableReadyCheck: false });
+          default:
+            return new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', { maxRetriesPerRequest: null, enableReadyCheck: false });
+        }
+      },
       defaultJobOptions: {
         attempts: 3,
         backoff: {
@@ -46,7 +55,16 @@ export class JobQueue {
     });
 
     this.agentQueue = new Queue('agent-tasks', {
-      redis: this.redisClient,
+      createClient: (type) => {
+        switch (type) {
+          case 'client':
+            return this.redisClient;
+          case 'subscriber':
+            return new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', { maxRetriesPerRequest: null, enableReadyCheck: false });
+          default:
+            return new IORedis(process.env.REDIS_URL || 'redis://localhost:6379', { maxRetriesPerRequest: null, enableReadyCheck: false });
+        }
+      },
       defaultJobOptions: {
         attempts: 2,
         timeout: 300000, // 5 minutes
@@ -63,10 +81,10 @@ export class JobQueue {
     this.projectQueue.process('project-execution', async (job) => {
       const startTime = Date.now();
       const { projectId, userId } = job.data;
-      
+
       try {
         logger.info(`Processing project execution job: ${job.id}, project: ${projectId}`);
-        
+
         // Update project status
         await Project.findByIdAndUpdate(projectId, {
           status: 'running',
@@ -78,7 +96,7 @@ export class JobQueue {
         await orchestrator.executeProject(projectId);
 
         const executionTime = Date.now() - startTime;
-        
+
         // Log analytics
         await Analytics.create({
           user: userId,
@@ -102,7 +120,7 @@ export class JobQueue {
         };
       } catch (error) {
         const executionTime = Date.now() - startTime;
-        
+
         // Update project status to failed
         await Project.findByIdAndUpdate(projectId, {
           status: 'failed',
@@ -134,13 +152,14 @@ export class JobQueue {
     this.agentQueue.process('agent-task', async (job) => {
       const startTime = Date.now();
       const { agentName, input, userId, projectId } = job.data;
-      
+
       try {
         logger.info(`Processing agent task job: ${job.id}, agent: ${agentName}`);
-        
+
         // Import agent manager
+        // Note: Dynamic import might need adjustment based on actual file location
         const { agentManager } = await import('../agent-orchestrator');
-        
+
         // Execute agent
         const result = await agentManager.executeAgent(agentName, input);
         const executionTime = Date.now() - startTime;
@@ -171,7 +190,7 @@ export class JobQueue {
         };
       } catch (error) {
         const executionTime = Date.now() - startTime;
-        
+
         // Log error analytics
         if (projectId) {
           await Analytics.create({
@@ -199,10 +218,10 @@ export class JobQueue {
     this.agentQueue.process('file-generation', async (job) => {
       const startTime = Date.now();
       const { content, fileName, type, userId, projectId } = job.data;
-      
+
       try {
         logger.info(`Processing file generation job: ${job.id}, file: ${fileName}`);
-        
+
         // Generate file (this is a simplified example)
         const file = {
           name: fileName,
@@ -244,7 +263,7 @@ export class JobQueue {
         };
       } catch (error) {
         const executionTime = Date.now() - startTime;
-        
+
         if (projectId) {
           await Analytics.create({
             user: userId,
@@ -318,7 +337,7 @@ export class JobQueue {
     });
   }
 
-  async addProjectExecution(projectId: string, userId: string): Promise<Queue.Job> {
+  async addProjectExecution(projectId: string, userId: string): Promise<Job> {
     return this.projectQueue.add('project-execution', {
       projectId,
       userId,
@@ -335,7 +354,7 @@ export class JobQueue {
     input: any,
     userId: string,
     projectId?: string
-  ): Promise<Queue.Job> {
+  ): Promise<Job> {
     return this.agentQueue.add('agent-task', {
       agentName,
       input,
@@ -355,7 +374,7 @@ export class JobQueue {
     userId: string,
     projectId?: string,
     type?: string
-  ): Promise<Queue.Job> {
+  ): Promise<Job> {
     return this.agentQueue.add('file-generation', {
       content,
       fileName,
@@ -418,24 +437,6 @@ export class JobQueue {
       },
       timestamp: new Date().toISOString()
     };
-  }
-
-  async cleanupOldJobs(daysToKeep: number = 7): Promise<void> {
-    const cutoffDate = Date.now() - (daysToKeep * 24 * 60 * 60 * 1000);
-    
-    // Clean completed jobs
-    await this.projectQueue.clean(cutoffDate, 1000, 'completed');
-    await this.agentQueue.clean(cutoffDate, 1000, 'completed');
-    
-    // Clean failed jobs (keep fewer)
-    await this.projectQueue.clean(cutoffDate, 100, 'failed');
-    await this.agentQueue.clean(cutoffDate, 100, 'failed');
-    
-    logger.info(`Cleaned up jobs older than ${daysToKeep} days`);
-  }
-
-  async pause(): Promise<void> {
-    await this.projectQueue.pause();
     await this.agentQueue.pause();
     logger.info('All queues paused');
   }

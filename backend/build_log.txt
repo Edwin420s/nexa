@@ -1,0 +1,136 @@
+src/agent-orchestrator/agents/code-builder.ts(43,9): error TS2353: Object literal may only specify known properties, and 'confidence' does not exist in type 'ProjectStructure'.
+src/agent-orchestrator/agents/code-builder.ts(286,7): error TS2353: Object literal may only specify known properties, and 'metadata' does not exist in type 'CodeFile'.
+src/controllers/agent.controller.ts(14,20): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/agent.controller.ts(14,29): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/agent.controller.ts(36,44): error TS2339: Property 'executeAgent' does not exist on type 'AgentOrchestrator'.
+src/controllers/agent.controller.ts(39,13): error TS2339: Property 'metadata' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/agent.controller.ts(68,20): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/agent.controller.ts(68,29): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/agent.controller.ts(94,24): error TS2339: Property 'lastRun' does not exist on type '{ name: string; model: string; status: "running" | "completed" | "failed" | "idle"; outputs: IAgentOutput[]; }'.
+src/controllers/auth.controller.ts(62,53): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/auth.controller.ts(62,62): error TS2339: Property 'userId' does not exist on type 'IUser'.
+src/controllers/auth.controller.ts(85,22): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/auth.controller.ts(85,31): error TS2339: Property 'userId' does not exist on type 'IUser'.
+src/controllers/auth.controller.ts(106,22): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/auth.controller.ts(106,31): error TS2339: Property 'userId' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(10,20): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(10,29): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(43,20): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(43,29): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(89,24): error TS2339: Property 'visibility' does not exist on type '{ streaming: boolean; autoSave: boolean; confidenceThreshold: number; maxIterations: number; }'.
+src/controllers/project.controller.ts(90,16): error TS2339: Property 'team' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/project.controller.ts(90,30): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(90,39): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(91,16): error TS2339: Property 'createdBy' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/project.controller.ts(91,33): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(91,42): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(127,18): error TS2339: Property 'team' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/project.controller.ts(127,32): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(127,41): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(127,57): error TS2339: Property 'createdBy' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/project.controller.ts(127,74): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(127,83): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(141,13): error TS2339: Property 'metadata' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/project.controller.ts(172,18): error TS2339: Property 'createdBy' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/controllers/project.controller.ts(172,35): error TS18048: 'req.user' is possibly 'undefined'.
+src/controllers/project.controller.ts(172,44): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/controllers/project.controller.ts(179,19): error TS2339: Property 'remove' does not exist on type 'Document<unknown, {}, IProject, {}, DefaultSchemaOptions> & IProject & Required<{ _id: ObjectId; }> & { ...; } & { ...; }'.
+src/middleware/validation.ts(3,36): error TS2307: Cannot find module '../services/security' or its corresponding type declarations.
+src/middleware/validation.ts(572,5): error TS2740: Type 'ArraySchema<any[]>' is missing the following properties from type 'ObjectSchema<any>': and, append, assert, instance, and 13 more.
+src/models/Agent.ts(3,18): error TS2430: Interface 'IAgent' incorrectly extends interface 'Document<ObjectId, any, any, Record<string, any>, {}>'.
+  Types of property 'model' are incompatible.
+    Type 'string' is not assignable to type '{ <ModelType = Model<unknown, {}, {}, {}, Document<unknown, {}, unknown, {}, DefaultSchemaOptions> & { _id: ObjectId; } & { __v: number; } & { id: string; }, any, unknown>>(name: string): ModelType; <ModelType = Model<...>>(): ModelType; }'.
+src/models/Project.ts(181,3): error TS2349: This expression is not callable.
+  Type 'SaveOptions' has no call signatures.
+src/models/Project.ts(271,21): error TS2339: Property 'active' does not exist on type '{}'.
+src/models/Project.ts(272,15): error TS2339: Property 'where' does not exist on type '{}'.
+src/models/Project.ts(276,21): error TS2339: Property 'completed' does not exist on type '{}'.
+src/models/Project.ts(277,15): error TS2339: Property 'where' does not exist on type '{}'.
+src/models/Project.ts(291,12): error TS2790: The operand of a 'delete' operator must be optional.
+src/models/Project.ts(292,12): error TS2790: The operand of a 'delete' operator must be optional.
+src/models/Project.ts(298,19): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '"remove"' is not assignable to parameter of type 'RegExp | "createCollection"'.
+src/models/Project.ts(298,45): error TS7006: Parameter 'next' implicitly has an 'any' type.
+src/models/Project.ts(304,47): error TS2683: 'this' implicitly has type 'any' because it does not have a type annotation.
+src/models/User.ts(62,44): error TS2349: This expression is not callable.
+  Type 'SaveOptions' has no call signatures.
+src/models/User.ts(67,5): error TS2349: This expression is not callable.
+  Type 'SaveOptions' has no call signatures.
+src/models/User.ts(69,5): error TS2349: This expression is not callable.
+  Type 'SaveOptions' has no call signatures.
+src/routes/admin.ts(103,15): error TS2345: Argument of type '{ [x: string]: string | QueryString.ParsedQs | -1 | (string | QueryString.ParsedQs)[]; }' is not assignable to parameter of type 'string | Record<string, SortOrder | { $meta: any; }> | [string, SortOrder][] | null | undefined'.
+  Type '{ [x: string]: string | QueryString.ParsedQs | -1 | (string | QueryString.ParsedQs)[]; }' is not assignable to type 'undefined'.
+src/routes/admin.ts(147,26): error TS18048: 'req.user' is possibly 'undefined'.
+src/routes/admin.ts(147,35): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/routes/admin.ts(173,15): error TS2345: Argument of type '{ [x: string]: string | QueryString.ParsedQs | -1 | (string | QueryString.ParsedQs)[]; }' is not assignable to parameter of type 'string | Record<string, SortOrder | { $meta: any; }> | [string, SortOrder][] | null | undefined'.
+  Type '{ [x: string]: string | QueryString.ParsedQs | -1 | (string | QueryString.ParsedQs)[]; }' is not assignable to type 'undefined'.
+src/routes/admin.ts(372,32): error TS2304: Cannot find name 'fs'.
+src/routes/admin.ts(373,51): error TS7006: Parameter 'line' implicitly has an 'any' type.
+src/routes/admin.ts(408,52): error TS2304: Cannot find name 'path'.
+src/routes/admin.ts(418,22): error TS2304: Cannot find name 'path'.
+src/routes/admin.ts(420,11): error TS2304: Cannot find name 'fs'.
+src/routes/admin.ts(421,25): error TS2304: Cannot find name 'fs'.
+src/routes/admin.ts(427,24): error TS2304: Cannot find name 'fs'.
+src/routes/admin.ts(519,30): error TS2353: Object literal may only specify known properties, and 'error' does not exist in type '{ healthy: boolean; models?: string[] | undefined; }'.
+src/routes/admin.ts(525,22): error TS2304: Cannot find name 'path'.
+src/routes/admin.ts(526,11): error TS2304: Cannot find name 'fs'.
+src/routes/admin.ts(527,11): error TS2304: Cannot find name 'fs'.
+src/routes/agent.routes.ts(13,34): error TS2559: Type 'ObjectSchema<any>' has no properties in common with type 'ValidationRule'.
+src/routes/agents.ts(64,26): error TS2339: Property 'metadata' does not exist on type 'CodeFile'.
+src/routes/analytics.ts(166,36): error TS2339: Property 'title' does not exist on type 'ObjectId'.
+src/routes/auth.routes.ts(2,10): error TS2305: Module '"../controllers/auth.controller"' has no exported member 'register'.
+src/routes/auth.routes.ts(2,20): error TS2305: Module '"../controllers/auth.controller"' has no exported member 'login'.
+src/routes/auth.routes.ts(2,27): error TS2305: Module '"../controllers/auth.controller"' has no exported member 'refreshToken'.
+src/routes/auth.routes.ts(8,35): error TS2559: Type 'ObjectSchema<any>' has no properties in common with type 'ValidationRule'.
+src/routes/auth.routes.ts(9,32): error TS2559: Type 'ObjectSchema<any>' has no properties in common with type 'ValidationRule'.
+src/routes/auth.ts(39,23): error TS2769: No overload matches this call.
+  Overload 1 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: null, options?: (SignOptions & { algorithm: "none"; }) | undefined): string', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'null'.
+  Overload 2 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | JsonWebKeyInput | PrivateKeyInput, options?: SignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | JsonWebKeyInput | PrivateKeyInput, callback: SignCallback): void', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'SignCallback'.
+src/routes/auth.ts(91,23): error TS2769: No overload matches this call.
+  Overload 1 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: null, options?: (SignOptions & { algorithm: "none"; }) | undefined): string', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'null'.
+  Overload 2 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | JsonWebKeyInput | PrivateKeyInput, options?: SignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | JsonWebKeyInput | PrivateKeyInput, callback: SignCallback): void', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'SignCallback'.
+src/routes/files.ts(329,53): error TS2304: Cannot find name 'path'.
+src/routes/files.ts(330,22): error TS2304: Cannot find name 'fs'.
+src/routes/files.ts(342,22): error TS2304: Cannot find name 'path'.
+src/routes/files.ts(345,11): error TS2304: Cannot find name 'fs'.
+src/routes/files.ts(347,25): error TS2304: Cannot find name 'fs'.
+src/routes/files.ts(353,24): error TS2304: Cannot find name 'fs'.
+src/routes/files.ts(358,7): error TS2304: Cannot find name 'fs'.
+src/routes/files.ts(358,42): error TS7006: Parameter 'error' implicitly has an 'any' type.
+src/routes/project.routes.ts(19,27): error TS2559: Type 'ObjectSchema<any>' has no properties in common with type 'ValidationRule'.
+src/routes/project.routes.ts(22,31): error TS2559: Type 'ObjectSchema<any>' has no properties in common with type 'ValidationRule'.
+src/server.ts(10,24): error TS2305: Module '"./middleware/error"' has no exported member 'notFound'.
+src/services/auth.service.ts(97,16): error TS2769: No overload matches this call.
+  Overload 1 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: null, options?: (SignOptions & { algorithm: "none"; }) | undefined): string', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'null'.
+  Overload 2 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | JsonWebKeyInput | PrivateKeyInput, options?: SignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | JsonWebKeyInput | PrivateKeyInput, callback: SignCallback): void', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'SignCallback'.
+src/services/file-storage.ts(6,22): error TS2307: Cannot find module 'archiver' or its corresponding type declarations.
+src/services/file-storage.ts(7,21): error TS2307: Cannot find module 'extract-zip' or its corresponding type declarations.
+src/services/file-storage.ts(410,17): error TS7006: Parameter 'entry' implicitly has an 'any' type.
+src/services/gemini.ts(1,29): error TS2307: Cannot find module '@google/genai' or its corresponding type declarations.
+src/services/notification.ts(424,33): error TS2345: Argument of type 'ObjectId' is not assignable to parameter of type 'string'.
+src/services/notification.ts(425,22): error TS2339: Property 'name' does not exist on type 'ObjectId'.
+src/services/notification.ts(441,33): error TS2345: Argument of type 'ObjectId' is not assignable to parameter of type 'string'.
+src/services/notification.ts(442,22): error TS2339: Property 'name' does not exist on type 'ObjectId'.
+src/services/notification.ts(458,33): error TS2345: Argument of type 'ObjectId' is not assignable to parameter of type 'string'.
+src/services/notification.ts(459,22): error TS2339: Property 'name' does not exist on type 'ObjectId'.
+src/services/notification.ts(492,35): error TS2345: Argument of type 'ObjectId' is not assignable to parameter of type 'string'.
+src/services/queue.ts(446,47): error TS2345: Argument of type '1000' is not assignable to parameter of type 'JobStatusClean | undefined'.
+src/services/queue.ts(447,45): error TS2345: Argument of type '1000' is not assignable to parameter of type 'JobStatusClean | undefined'.
+src/services/queue.ts(450,47): error TS2345: Argument of type '100' is not assignable to parameter of type 'JobStatusClean | undefined'.
+src/services/queue.ts(451,45): error TS2345: Argument of type '100' is not assignable to parameter of type 'JobStatusClean | undefined'.
+src/services/rate-limiter.ts(59,19): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/services/rate-limiter.ts(60,37): error TS2339: Property 'id' does not exist on type 'IUser'.
+src/utils/security.ts(360,30): error TS2339: Property 'id' does not exist on type 'IUser'.

@@ -31,23 +31,6 @@ const AgentSchema = new Schema<IAgent>({
   name: {
     type: String,
     required: true,
-    unique: true
-  },
-  type: {
-    type: String,
-    required: true,
-    enum: ['research', 'code', 'summary', 'visual']
-  },
-  model: {
-    type: String,
-    required: true,
-    enum: ['gemini-3-pro', 'gemini-2.5-flash', 'gemini-2.5-pro', 'nano-banana', 'veo-3.1']
-  },
-  description: {
-    type: String,
-    required: true
-  },
-  capabilities: [{
     type: String
   }],
   config: {
