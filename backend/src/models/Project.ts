@@ -172,7 +172,8 @@ ProjectSchema.index({ 'analytics.confidenceScore': -1 });
 ProjectSchema.index({ 'agents.status': 1 });
 
 // Add pre-save hook to set timestamps
-ProjectSchema.pre<IProject>('save', function (next) {
+ProjectSchema.pre('save', function (next) {
+
   const now = new Date();
   this.updatedAt = now;
   if (!this.createdAt) {
