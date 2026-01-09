@@ -4,6 +4,8 @@ import { authenticate } from '../middleware/auth';
 import { getFileStorage } from '../services/file-storage';
 import { Project } from '../models/Project';
 import logger from '../utils/logger';
+import fs from 'fs';
+import path from 'path';
 
 const router = express.Router();
 
@@ -149,7 +151,7 @@ router.post('/upload/single', authenticate, upload.single('file'), async (req: a
 router.get('/', authenticate, async (req: any, res, next) => {
   try {
     const { projectId, limit, offset, sortBy, sortOrder } = req.query;
-    
+
     const files = await getFileStorage().listFiles(
       req.user.id,
       projectId,
@@ -175,7 +177,7 @@ router.get('/', authenticate, async (req: any, res, next) => {
 router.get('/:fileId', authenticate, async (req: any, res, next) => {
   try {
     const file = await getFileStorage().getFile(req.params.fileId, req.user.id);
-    
+
     if (!file) {
       return res.status(404).json({
         success: false,
@@ -196,7 +198,7 @@ router.get('/:fileId', authenticate, async (req: any, res, next) => {
 router.get('/:fileId/download', authenticate, async (req: any, res, next) => {
   try {
     const file = await getFileStorage().getFile(req.params.fileId, req.user.id);
-    
+
     if (!file) {
       return res.status(404).json({
         success: false,
@@ -222,7 +224,7 @@ router.get('/:fileId/content', authenticate, async (req: any, res, next) => {
   try {
     const { format = 'json' } = req.query;
     const file = await getFileStorage().getFileContent(req.params.fileId, req.user.id);
-    
+
     if (!file) {
       return res.status(404).json({
         success: false,
@@ -258,7 +260,7 @@ router.put('/:fileId', authenticate, async (req: any, res, next) => {
     // Note: This only updates project references
     // Actual file metadata is stored in JSON files
     const { projectId } = req.body;
-    
+
     if (projectId) {
       const success = await getFileStorage().moveFile(
         req.params.fileId,
@@ -287,7 +289,7 @@ router.put('/:fileId', authenticate, async (req: any, res, next) => {
 router.delete('/:fileId', authenticate, async (req: any, res, next) => {
   try {
     const success = await getFileStorage().deleteFile(req.params.fileId, req.user.id);
-    
+
     if (!success) {
       return res.status(404).json({
         success: false,
@@ -340,22 +342,22 @@ router.post('/archive', authenticate, async (req: any, res, next) => {
 router.get('/download/archive/:filename', authenticate, async (req: any, res, next) => {
   try {
     const filePath = path.join(getFileStorage()['config'].basePath, 'exports', req.params.filename);
-    
+
     // Check if file exists and is accessible
     await fs.promises.access(filePath);
-    
+
     const stats = await fs.promises.stat(filePath);
-    
+
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Length', stats.size);
     res.setHeader('Content-Disposition', `attachment; filename="${req.params.filename}"`);
-    
+
     const fileStream = fs.createReadStream(filePath);
     fileStream.pipe(res);
-    
+
     // Delete file after download (optional)
     fileStream.on('end', () => {
-      fs.promises.unlink(filePath).catch(error => {
+      fs.promises.unlink(filePath).catch((error: any) => {
         logger.error('Failed to delete archive after download:', error);
       });
     });
@@ -374,7 +376,7 @@ router.get('/download/archive/:filename', authenticate, async (req: any, res, ne
 router.post('/:fileId/copy', authenticate, async (req: any, res, next) => {
   try {
     const { newFileName, targetUserId, metadata } = req.body;
-    
+
     if (!newFileName) {
       return res.status(400).json({
         success: false,
@@ -383,7 +385,7 @@ router.post('/:fileId/copy', authenticate, async (req: any, res, next) => {
     }
 
     const targetUserIdToUse = targetUserId || req.user.id;
-    
+
     const copiedFile = await getFileStorage().copyFile(
       req.params.fileId,
       newFileName,
@@ -413,7 +415,7 @@ router.get('/stats/storage', authenticate, async (req: any, res, next) => {
 
     const userId = req.query.userId || (req.user.role === 'admin' ? undefined : req.user.id);
     const files = await getFileStorage().listFiles(userId);
-    
+
     const stats = {
       totalFiles: files.length,
       totalSize: files.reduce((sum, file) => sum + file.size, 0),

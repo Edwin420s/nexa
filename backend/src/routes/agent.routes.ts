@@ -10,7 +10,7 @@ const router = Router();
 router.use(authenticate);
 
 // Agent execution
-router.post('/execute', validate(executeAgentSchema), executeAgent);
+router.post('/execute', validate({ body: executeAgentSchema }), executeAgent);
 router.get('/:projectId/status/:agentName', getAgentStatus);
 
 export default router;

@@ -65,7 +65,7 @@ export const executeAgent = async (req: Request, res: Response) => {
 export const getAgentStatus = async (req: Request, res: Response) => {
   try {
     const { projectId, agentName } = req.params;
-    const userId = req.user.id;
+    const userId = (req as any).user.id;
 
     // Find the project
     const project = await Project.findOne({
@@ -91,7 +91,7 @@ export const getAgentStatus = async (req: Request, res: Response) => {
       data: {
         name: agent.name,
         status: agent.status,
-        lastRun: agent.lastRun,
+        lastRun: agent.outputs.length > 0 ? agent.outputs[agent.outputs.length - 1].timestamp : null,
       },
     });
   } catch (error) {
