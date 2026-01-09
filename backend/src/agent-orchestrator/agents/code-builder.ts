@@ -8,6 +8,7 @@ export interface CodeFile {
   language: string;
   type: 'component' | 'utility' | 'config' | 'test';
   dependencies?: string[];
+  metadata?: Record<string, any>;
 }
 
 export interface ProjectStructure {
@@ -27,7 +28,7 @@ export class CodeBuilderAgent {
 
   async generateProject(requirements: string, stack: string = 'nodejs'): Promise<ProjectStructure> {
     const prompt = this.generateProjectPrompt(requirements, stack);
-    
+
     try {
       const response = await this.gemini.generateContent(prompt, {
         model: 'gemini-2.5-pro',
@@ -37,7 +38,7 @@ export class CodeBuilderAgent {
 
       const structuredResult = this.parseProjectResponse(response.content, stack);
       const confidence = ConfidenceService.calculateConfidence(response.content, requirements);
-      
+
       return {
         ...structuredResult,
         confidence,
@@ -240,7 +241,7 @@ export class CodeBuilderAgent {
     5. Export/import statements if needed
     
     Return only the code without explanations.`;
-    
+
     const response = await this.gemini.generateContent(prompt, {
       model: 'gemini-2.5-flash',
       temperature: 0.2,
@@ -271,7 +272,7 @@ export class CodeBuilderAgent {
     4. Follow ${testFramework} best practices
     
     Return the test code only.`;
-    
+
     const response = await this.gemini.generateContent(prompt, {
       model: 'gemini-2.5-flash',
       temperature: 0.3,
