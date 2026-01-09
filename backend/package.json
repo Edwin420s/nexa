@@ -11,21 +11,14 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "lint": "eslint . --ext .ts",
-    "format": "prettier --write \"src/**/*.ts\"",
+    "lint:fix": "eslint . --ext .ts --fix",
+    "format": "prettier --write \"**/*.{ts,json,md}\"",
     "docker:dev": "docker-compose -f docker-compose.yml up -d --build",
     "docker:prod": "docker-compose -f docker-compose.production.yml up -d --build",
     "docker:down": "docker-compose down -v",
     "migrate": "ts-node ./node_modules/typeorm/cli.js migration:run",
     "migrate:revert": "ts-node ./node_modules/typeorm/cli.js migration:revert",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js"
-     "test": "NODE_ENV=test jest --detectOpenHandles --forceExit",
-    "test:watch": "NODE_ENV=test jest --watch",
-    "test:coverage": "NODE_ENV=test jest --coverage"
-    "lint": "eslint . --ext .ts",
-    "lint:fix": "eslint . --ext .ts --fix",
-    "format": "prettier --write \"**/*.{ts,json,md}\""
-  }
-  }
   },
   "dependencies": {
     "@google/generative-ai": "^0.1.0",
