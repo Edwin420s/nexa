@@ -194,7 +194,7 @@ ProjectSchema.methods.addAgent = function (agent: {
     status: agent.status || 'idle',
     outputs: agent.outputs || []
   });
-  return this.save();
+  return (this as any).save();
 };
 
 // Add method to update agent status
@@ -205,7 +205,7 @@ ProjectSchema.methods.updateAgentStatus = function (agentName: string, status: '
     if (status === 'completed' || status === 'failed') {
       this.completedAt = new Date();
     }
-    return this.save();
+    return (this as any).save();
   }
   throw new Error(`Agent ${agentName} not found in project ${this._id}`);
 };
@@ -218,7 +218,7 @@ ProjectSchema.methods.addAgentOutput = function (agentName: string, output: Omit
       ...output,
       timestamp: new Date()
     });
-    return this.save();
+    return (this as any).save();
   }
   throw new Error(`Agent ${agentName} not found in project ${this._id}`);
 };
@@ -226,7 +226,7 @@ ProjectSchema.methods.addAgentOutput = function (agentName: string, output: Omit
 // Add method to update project analytics
 ProjectSchema.methods.updateAnalytics = function (updates: Partial<IProject['analytics']>) {
   this.analytics = { ...this.analytics, ...updates };
-  return this.save();
+  return (this as any).save();
 };
 
 // Add static method to find projects by status

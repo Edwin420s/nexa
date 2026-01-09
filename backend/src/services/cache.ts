@@ -55,7 +55,7 @@ export class CacheService {
     try {
       const cacheKey = this.getKey(key, options.prefix);
       const ttl = options.ttl || this.defaultTTL;
-      
+
       let valueToStore: string;
       if (options.serialize === false && typeof value === 'string') {
         valueToStore = value;
@@ -109,14 +109,14 @@ export class CacheService {
     options: CacheOptions = {}
   ): Promise<T> {
     const cached = await this.get<T>(key, options);
-    
+
     if (cached !== null) {
       return cached;
     }
 
     const value = await fetchFn();
     await this.set(key, value, options);
-    
+
     return value;
   }
 
@@ -140,6 +140,10 @@ export class CacheService {
     } catch (error) {
       logger.error(`Cache delete pattern error for ${pattern}:`, error);
     }
+  }
+
+  async clear(pattern: string): Promise<void> {
+    return this.delPattern(pattern);
   }
 
   async exists(key: string, prefix?: string): Promise<boolean> {
@@ -178,13 +182,13 @@ export class CacheService {
     try {
       const cacheKey = this.getKey(key, options.prefix);
       const result = await this.client.incrby(cacheKey, amount);
-      
+
       // Set TTL if this is a new key
       const ttl = await this.client.ttl(cacheKey);
       if (ttl === -1 && options.ttl) {
         await this.client.expire(cacheKey, options.ttl);
       }
-      
+
       return result;
     } catch (error) {
       logger.error(`Cache increment error for key ${key}:`, error);
@@ -203,13 +207,13 @@ export class CacheService {
       const valueToStore = options.serialize === false && typeof value === 'string'
         ? value
         : JSON.stringify(value);
-      
+
       await this.client.hset(cacheKey, field, valueToStore);
-      
+
       if (options.ttl) {
         await this.client.expire(cacheKey, options.ttl);
       }
-      
+
       logger.debug(`Cache hset: ${cacheKey}.${field}`);
     } catch (error) {
       logger.error(`Cache hset error for key ${key}.${field}:`, error);
@@ -220,11 +224,11 @@ export class CacheService {
     try {
       const cacheKey = this.getKey(key, options.prefix);
       const value = await this.client.hget(cacheKey, field);
-      
+
       if (!value) {
         return null;
       }
-      
+
       let parsedValue: any = value;
       if (options.serialize !== false) {
         try {
@@ -233,7 +237,7 @@ export class CacheService {
           parsedValue = value;
         }
       }
-      
+
       return parsedValue as T;
     } catch (error) {
       logger.error(`Cache hget error for key ${key}.${field}:`, error);
@@ -245,7 +249,7 @@ export class CacheService {
     try {
       const cacheKey = this.getKey(key, prefix);
       const result = await this.client.hgetall(cacheKey);
-      
+
       const parsed: Record<string, any> = {};
       for (const [field, value] of Object.entries(result)) {
         try {
@@ -254,7 +258,7 @@ export class CacheService {
           parsed[field] = value;
         }
       }
-      
+
       return parsed;
     } catch (error) {
       logger.error(`Cache hgetall error for key ${key}:`, error);
@@ -266,7 +270,7 @@ export class CacheService {
     try {
       const cacheKey = this.getKey(key, options.prefix);
       await this.client.sadd(cacheKey, ...members);
-      
+
       if (options.ttl) {
         await this.client.expire(cacheKey, options.ttl);
       }
@@ -300,7 +304,7 @@ export class CacheService {
     try {
       const pattern = prefix ? this.getKey('*', prefix) : this.getKey('*');
       const keys = await this.client.keys(pattern);
-      
+
       if (keys.length > 0) {
         await this.client.del(...keys);
         logger.info(`Cache flushed: ${keys.length} keys removed`);
@@ -325,7 +329,7 @@ export class CacheService {
       const info = await this.client.info();
       const lines = info.split('\r\n');
       const stats: Record<string, any> = {};
-      
+
       for (const line of lines) {
         if (line.includes(':')) {
           const [key, value] = line.split(':');
@@ -334,7 +338,7 @@ export class CacheService {
           }
         }
       }
-      
+
       return {
         connected: true,
         ...stats,
@@ -374,26 +378,26 @@ export function Cache(options: CacheOptions = {}) {
   ) {
     const originalMethod = descriptor.value;
     const cacheService = getCache();
-    
+
     descriptor.value = async function (...args: any[]) {
       // Generate cache key from method name and arguments
       const cacheKey = `${propertyKey}:${JSON.stringify(args)}`;
-      
+
       // Try to get from cache
       const cached = await cacheService.get(cacheKey, options);
       if (cached !== null) {
         return cached;
       }
-      
+
       // Execute original method
       const result = await originalMethod.apply(this, args);
-      
+
       // Store in cache
       await cacheService.set(cacheKey, result, options);
-      
+
       return result;
     };
-    
+
     return descriptor;
   };
 }
@@ -407,17 +411,17 @@ export function CacheInvalidate(pattern: string) {
   ) {
     const originalMethod = descriptor.value;
     const cacheService = getCache();
-    
+
     descriptor.value = async function (...args: any[]) {
       // Execute original method
       const result = await originalMethod.apply(this, args);
-      
+
       // Invalidate cache
       await cacheService.delPattern(pattern);
-      
+
       return result;
     };
-    
+
     return descriptor;
   };
 }

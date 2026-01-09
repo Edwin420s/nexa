@@ -176,6 +176,56 @@ export class AgentOrchestrator extends EventEmitter {
     }
   }
 
+  async executeAgent(projectId: string, agentName: string, prompt: string): Promise<any> {
+    const taskId = uuidv4();
+    const startTime = new Date();
+
+    try {
+      // Validate inputs
+      if (!projectId || !agentName || !prompt) {
+        throw new ValidationError('Project ID, agent name, and prompt are required');
+      }
+
+      // Check if project exists
+      const project = await Project.findById(projectId);
+      if (!project) {
+        throw new OrchestratorError(`Project ${projectId} not found`, 'PROJECT_NOT_FOUND');
+      }
+
+      // Find agent configuration
+      const agentConfig = project.agents.find(a => a.name === agentName);
+      if (!agentConfig) {
+        throw new OrchestratorError(`Agent ${agentName} not found in project`, 'AGENT_NOT_FOUND');
+      }
+
+      // Create task
+      const task: AgentTask = {
+        agentName,
+        prompt,
+        model: agentConfig.model,
+        tools: this.getAgentTools(agentName)
+      };
+
+      // Execute task
+      const results = await this.executeAgentTasks(projectId, [task]);
+      const result = results[agentName];
+
+      // Update project with result (if not already handled by executeAgentTasks/processResults)
+      // executeAgentTasks returns results but doesn't save to project unless processResults is called.
+      // But processResults expects a full set of results for the project?
+      // Actually processResults updates analytics and files.
+
+      // We should probably just return the result here and let the controller handle saving if needed,
+      // or save it here. The controller saves it too (or tries to).
+
+      return result;
+
+    } catch (error) {
+      logger.error(`Error executing agent ${agentName}:`, error);
+      throw error;
+    }
+  }
+
   private generateTasksFromProject(project: IProject): AgentTask[] {
     const tasks: AgentTask[] = [];
 

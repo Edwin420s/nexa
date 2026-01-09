@@ -36,15 +36,17 @@ export const executeAgent = async (req: Request, res: Response) => {
     const result = await agentOrchestrator.executeAgent(projectId, agentName, prompt);
 
     // Update project with the result
-    project.metadata.updatedAt = new Date();
-    await project.save();
+    project.updatedAt = new Date();
+    await (project as any).save();
 
     // Emit agent execution result
-    req.io.to(`project:${projectId}`).emit('agent:executed', {
-      projectId,
-      agentName,
-      result,
-    });
+    if ((req as any).io) {
+      (req as any).io.to(`project:${projectId}`).emit('agent:executed', {
+        projectId,
+        agentName,
+        result,
+      });
+    }
 
     res.json({
       success: true,

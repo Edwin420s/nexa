@@ -268,85 +268,87 @@ export class FileStorageService {
       logger.error(`Failed to delete file ${fileId}:`, error);
       return false;
     }
-  async deleteUserFiles(userId: string): Promise < void> {
-      try {
-        const files = await this.listFiles(userId);
-        for(const file of files) {
-          await this.deleteFile(file.id, userId);
-        }
-      logger.info(`Deleted all files for user ${userId}`);
-      } catch(error) {
-        logger.error(`Failed to delete user files for ${userId}:`, error);
-        throw error;
+  }
+
+  async deleteUserFiles(userId: string): Promise<void> {
+    try {
+      const files = await this.listFiles(userId);
+      for (const file of files) {
+        await this.deleteFile(file.id, userId);
       }
+      logger.info(`Deleted all files for user ${userId}`);
+    } catch (error) {
+      logger.error(`Failed to delete user files for ${userId}:`, error);
+      throw error;
     }
+  }
 
   async listFiles(
-      userId ?: string,
-      projectId ?: string,
-      options ?: {
-        limit?: number;
-        offset?: number;
-        sortBy?: keyof FileMetadata;
-        sortOrder?: 'asc' | 'desc';
-      }
-    ): Promise < FileMetadata[] > {
-      const files: FileMetadata[] = [];
-      const basePath = path.join(this.config.basePath, 'projects');
+    userId?: string,
+    projectId?: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      sortBy?: keyof FileMetadata;
+      sortOrder?: 'asc' | 'desc';
+    }
+  ): Promise<FileMetadata[]> {
+    const files: FileMetadata[] = [];
+    const basePath = path.join(this.config.basePath, 'projects');
 
-      try {
-        if(userId) {
-          // List files for specific user
-          const userPath = path.join(basePath, userId);
+    try {
+      if (userId) {
+        // List files for specific user
+        const userPath = path.join(basePath, userId);
+        await this.scanDirectoryForMetadata(userPath, files);
+      } else {
+        // List all files (admin only)
+        const users = await fs.readdir(basePath);
+        for (const user of users) {
+          const userPath = path.join(basePath, user);
           await this.scanDirectoryForMetadata(userPath, files);
-        } else {
-          // List all files (admin only)
-          const users = await fs.readdir(basePath);
-          for(const user of users) {
-            const userPath = path.join(basePath, user);
-            await this.scanDirectoryForMetadata(userPath, files);
-          }
         }
+      }
 
       // Filter by project if specified
       let filteredFiles = files;
-        if(projectId) {
-          filteredFiles = files.filter(file => file.projectId === projectId);
-        }
+      if (projectId) {
+        filteredFiles = files.filter(file => file.projectId === projectId);
+      }
 
       // Apply sorting
       const { sortBy = 'createdAt', sortOrder = 'desc' } = options || {};
-        filteredFiles.sort((a, b) => {
-          const aVal = a[sortBy];
-          const bVal = b[sortBy];
+      filteredFiles.sort((a, b) => {
+        const aVal = a[sortBy];
+        const bVal = b[sortBy];
 
-          if (aVal instanceof Date && bVal instanceof Date) {
-            return sortOrder === 'asc'
-              ? aVal.getTime() - bVal.getTime()
-              : bVal.getTime() - aVal.getTime();
-          }
-
-          if (typeof aVal === 'string' && typeof bVal === 'string') {
-            return sortOrder === 'asc'
-              ? aVal.localeCompare(bVal)
-              : bVal.localeCompare(aVal);
-          }
-
-          return 0;
-        });
-
-        // Apply pagination
-        const { limit, offset = 0 } = options || {};
-        if(limit) {
-          return filteredFiles.slice(offset, offset + limit);
+        if (aVal instanceof Date && bVal instanceof Date) {
+          return sortOrder === 'asc'
+            ? aVal.getTime() - bVal.getTime()
+            : bVal.getTime() - aVal.getTime();
         }
 
-      return filteredFiles;
-      } catch(error) {
-        logger.error('Failed to list files:', error);
-        return [];
+        if (typeof aVal === 'string' && typeof bVal === 'string') {
+          return sortOrder === 'asc'
+            ? aVal.localeCompare(bVal)
+            : bVal.localeCompare(aVal);
+        }
+
+        return 0;
+      });
+
+      // Apply pagination
+      const { limit, offset = 0 } = options || {};
+      if (limit) {
+        return filteredFiles.slice(offset, offset + limit);
       }
+
+      return filteredFiles;
+    } catch (error) {
+      logger.error('Failed to list files:', error);
+      return [];
     }
+  }
 
   private async scanDirectoryForMetadata(dirPath: string, results: FileMetadata[]): Promise<void> {
     try {

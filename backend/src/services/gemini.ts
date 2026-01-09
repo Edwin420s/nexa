@@ -199,6 +199,13 @@ export class GeminiService {
       throw error;
     }
   }
+  async checkHealth(): Promise<boolean> {
+    try {
+      return !!this.config.apiKey;
+    } catch (error) {
+      return false;
+    }
+  }
 }
 
 // Singleton instance
