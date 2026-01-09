@@ -451,27 +451,6 @@ The Nexa Team`,
     alertType: string,
     severity: 'low' | 'medium' | 'high',
     message: string,
-    details?: any
-  ): Promise<void> {
-    // Send to admins
-    const admins = await User.find({ role: 'admin' });
-
-    for (const admin of admins) {
-      await this.sendNotification(admin._id, 'system_alert', {
-        alertType,
-        severity,
-        message,
-        timestamp: new Date().toISOString(),
-        details: JSON.stringify(details, null, 2)
-      }, {
-        priority: severity === 'high' ? 'high' : 'medium'
-      });
-    }
-  }
-
-  async sendWelcomeEmail(userId: string): Promise<void> {
-    const user = await User.findById(userId);
-    if (!user) return;
 
     await this.sendNotification(userId, 'welcome', {
       userName: user.name
@@ -481,109 +460,109 @@ The Nexa Team`,
     });
   }
 
-  // Template management
-  getTemplate(templateId: string): NotificationTemplate | undefined {
-    return this.templates.get(templateId);
-  }
+// Template management
+getTemplate(templateId: string): NotificationTemplate | undefined {
+  return this.templates.get(templateId);
+}
 
-  getTemplates(): NotificationTemplate[] {
-    return Array.from(this.templates.values());
-  }
+getTemplates(): NotificationTemplate[] {
+  return Array.from(this.templates.values());
+}
 
-  addTemplate(template: NotificationTemplate): void {
-    this.templates.set(template.id, template);
-  }
+addTemplate(template: NotificationTemplate): void {
+  this.templates.set(template.id, template);
+}
 
-  updateTemplate(templateId: string, updates: Partial<NotificationTemplate>): boolean {
-    const template = this.templates.get(templateId);
-    if (!template) return false;
+updateTemplate(templateId: string, updates: Partial<NotificationTemplate>): boolean {
+  const template = this.templates.get(templateId);
+  if (!template) return false;
 
-    this.templates.set(templateId, { ...template, ...updates });
-    return true;
-  }
+  this.templates.set(templateId, { ...template, ...updates });
+  return true;
+}
 
-  deleteTemplate(templateId: string): boolean {
-    return this.templates.delete(templateId);
-  }
+deleteTemplate(templateId: string): boolean {
+  return this.templates.delete(templateId);
+}
 
   // Utility methods
   private formatExecutionTime(ms: number): string {
-    if (ms < 1000) return `${ms}ms`;
-    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
-    if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
-    return `${(ms / 3600000).toFixed(1)}h`;
-  }
+  if (ms < 1000) return `${ms}ms`;
+  if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+  if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
+  return `${(ms / 3600000).toFixed(1)}h`;
+}
 
   // Get user notifications
   async getUserNotifications(
-    userId: string,
-    options?: {
-      limit?: number;
-      offset?: number;
-      unreadOnly?: boolean;
-      type?: Notification['type'];
-    }
-  ): Promise<Notification[]> {
-    // In a real implementation, this would query a database
-    // For now, return empty array
-    return [];
+  userId: string,
+  options ?: {
+    limit?: number;
+    offset?: number;
+    unreadOnly?: boolean;
+    type?: Notification['type'];
   }
+): Promise < Notification[] > {
+  // In a real implementation, this would query a database
+  // For now, return empty array
+  return [];
+}
 
-  async markAsRead(notificationId: string, userId: string): Promise<boolean> {
-    // In a real implementation, this would update the database
-    this.emit('notification:read', { notificationId, userId });
-    return true;
-  }
+  async markAsRead(notificationId: string, userId: string): Promise < boolean > {
+  // In a real implementation, this would update the database
+  this.emit('notification:read', { notificationId, userId });
+  return true;
+}
 
-  async markAllAsRead(userId: string, type?: Notification['type']): Promise<number> {
-    // In a real implementation, this would update the database
-    const count = 0; // Would be actual count from DB
-    this.emit('notifications:all_read', { userId, type, count });
-    return count;
-  }
+  async markAllAsRead(userId: string, type ?: Notification['type']): Promise < number > {
+  // In a real implementation, this would update the database
+  const count = 0; // Would be actual count from DB
+  this.emit('notifications:all_read', { userId, type, count });
+  return count;
+}
 
   // Cleanup old notifications
-  async cleanupOldNotifications(retentionDays?: number): Promise<number> {
-    const days = retentionDays || this.config.inApp.retentionDays;
-    const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  async cleanupOldNotifications(retentionDays ?: number): Promise < number > {
+  const days = retentionDays || this.config.inApp.retentionDays;
+  const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
 
-    // In a real implementation, delete old notifications from database
-    const deletedCount = 0; // Would be actual count from DB
+  // In a real implementation, delete old notifications from database
+  const deletedCount = 0; // Would be actual count from DB
 
-    logger.info(`Cleaned up ${deletedCount} old notifications`);
-    return deletedCount;
-  }
+  logger.info(`Cleaned up ${deletedCount} old notifications`);
+  return deletedCount;
+}
 
   private renderTemplate(template: string, variables: Record<string, any>): string {
-    let rendered = template;
+  let rendered = template;
 
-    for (const [key, value] of Object.entries(variables)) {
-      const placeholder = `{{${key}}}`;
-      rendered = rendered.replace(new RegExp(placeholder, 'g'), value);
-    }
-
-    return rendered;
+  for (const [key, value] of Object.entries(variables)) {
+    const placeholder = `{{${key}}}`;
+    rendered = rendered.replace(new RegExp(placeholder, 'g'), value);
   }
+
+  return rendered;
+}
 
   private convertToHtml(text: string): string {
-    // Convert plain text to basic HTML
-    return text
-      .split('\n\n')
-      .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
-      .join('\n');
-  }
+  // Convert plain text to basic HTML
+  return text
+    .split('\n\n')
+    .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+    .join('\n');
+}
 
   private generateWebhookSignature(notification: Notification): string {
-    const secret = process.env.WEBHOOK_SECRET || 'your-webhook-secret';
-    const data = JSON.stringify(notification);
+  const secret = process.env.WEBHOOK_SECRET || 'your-webhook-secret';
+  const data = JSON.stringify(notification);
 
-    // Use HMAC for signature
-    const crypto = require('crypto');
-    return crypto
-      .createHmac('sha256', secret)
-      .update(data)
-      .digest('hex');
-  }
+  // Use HMAC for signature
+  const crypto = require('crypto');
+  return crypto
+    .createHmac('sha256', secret)
+    .update(data)
+    .digest('hex');
+}
 }
 
 // Singleton instance
