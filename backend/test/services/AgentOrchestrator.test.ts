@@ -1,4 +1,3 @@
-// test/services/AgentOrchestrator.test.ts
 import { AgentOrchestrator, OrchestratorEvents } from '../../agent-orchestrator/orchestrator';
 import { testUtils } from '../test-utils/setup';
 
