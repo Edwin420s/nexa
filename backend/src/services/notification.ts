@@ -382,6 +382,178 @@ The Nexa Team`,
     throw new Error('SMS notifications not implemented');
   }
 
+  async notifyProjectStarted(projectId: string): Promise<void> {
+    const project = await Project.findById(projectId).populate('user');
+    if (!project) return;
+
+    const user = project.user;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    await this.sendNotification(user._id.toString(), 'project_started', {
+      userName: user.name,
+      projectName: project.title,
+      projectGoal: project.goal.substring(0, 100) + '...',
+      agentCount: project.agents.length,
+      estimatedTime: '5-10 minutes',
+      projectUrl: `${frontendUrl}/project/${project._id}`
+    });
+  }
+
+  async notifyProjectCompleted(projectId: string): Promise<void> {
+    const project = await Project.findById(projectId).populate('user');
+    if (!project) return;
+
+    const user = project.user;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    await this.sendNotification(user._id.toString(), 'project_completed', {
+      userName: user.name,
+      projectName: project.title,
+      confidenceScore: (project.analytics.confidenceScore * 100).toFixed(1),
+      executionTime: this.formatExecutionTime(project.analytics.executionTime),
+      fileCount: project.files?.length || 0,
+      projectUrl: `${frontendUrl}/project/${project._id}`
+    });
+  }
+
+  async notifyProjectFailed(projectId: string, error: Error): Promise<void> {
+    const project = await Project.findById(projectId).populate('user');
+    if (!project) return;
+
+    const user = project.user;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+
+    await this.sendNotification(user._id.toString(), 'project_failed', {
+      userName: user.name,
+      projectName: project.title,
+      errorMessage: error.message.substring(0, 200),
+      projectUrl: `${frontendUrl}/project/${project._id}`
+    });
+  }
+
+  async notifyAgentUpdate(
+    userId: string,
+    agentName: string,
+    taskName: string,
+    confidence: number
+  ): Promise<void> {
+    await this.sendNotification(userId, 'agent_update', {
+      agentName,
+      taskName,
+      confidence: (confidence * 100).toFixed(1)
+    }, {
+      type: 'in_app',
+      priority: 'low'
+    });
+  }
+
+  async notifySystemAlert(
+    alertType: string,
+    severity: 'low' | 'medium' | 'high',
+    message: string,
+    details?: any
+  ): Promise<void> {
+    // Send to admins
+    const admins = await User.find({ role: 'admin' });
+
+    for (const admin of admins) {
+      await this.sendNotification(admin._id, 'system_alert', {
+        alertType,
+        severity,
+        message,
+        timestamp: new Date().toISOString(),
+        details: JSON.stringify(details, null, 2)
+      }, {
+        priority: severity === 'high' ? 'high' : 'medium'
+      });
+    }
+  }
+
+  async sendWelcomeEmail(userId: string): Promise<void> {
+    const user = await User.findById(userId);
+    if (!user) return;
+
+    await this.sendNotification(userId, 'welcome', {
+      userName: user.name
+    }, {
+      type: 'email',
+      priority: 'low'
+    });
+  }
+
+  // Template management
+  getTemplate(templateId: string): NotificationTemplate | undefined {
+    return this.templates.get(templateId);
+  }
+
+  getTemplates(): NotificationTemplate[] {
+    return Array.from(this.templates.values());
+  }
+
+  addTemplate(template: NotificationTemplate): void {
+    this.templates.set(template.id, template);
+  }
+
+  updateTemplate(templateId: string, updates: Partial<NotificationTemplate>): boolean {
+    const template = this.templates.get(templateId);
+    if (!template) return false;
+
+    this.templates.set(templateId, { ...template, ...updates });
+    return true;
+  }
+
+  deleteTemplate(templateId: string): boolean {
+    return this.templates.delete(templateId);
+  }
+
+  // Utility methods
+  private formatExecutionTime(ms: number): string {
+    if (ms < 1000) return `${ms}ms`;
+    if (ms < 60000) return `${(ms / 1000).toFixed(1)}s`;
+    if (ms < 3600000) return `${(ms / 60000).toFixed(1)}m`;
+    return `${(ms / 3600000).toFixed(1)}h`;
+  }
+
+  // Get user notifications
+  async getUserNotifications(
+    userId: string,
+    options?: {
+      limit?: number;
+      offset?: number;
+      unreadOnly?: boolean;
+      type?: Notification['type'];
+    }
+  ): Promise<Notification[]> {
+    // In a real implementation, this would query a database
+    // For now, return empty array
+    return [];
+  }
+
+  async markAsRead(notificationId: string, userId: string): Promise<boolean> {
+    // In a real implementation, this would update the database
+    this.emit('notification:read', { notificationId, userId });
+    return true;
+  }
+
+  async markAllAsRead(userId: string, type?: Notification['type']): Promise<number> {
+    // In a real implementation, this would update the database
+    const count = 0; // Would be actual count from DB
+    this.emit('notifications:all_read', { userId, type, count });
+    return count;
+  }
+
+  // Cleanup old notifications
+  async cleanupOldNotifications(retentionDays?: number): Promise<number> {
+    const days = retentionDays || this.config.inApp.retentionDays;
+    const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    // In a real implementation, delete old notifications from database
+    const deletedCount = 0; // Would be actual count from DB
+
+    logger.info(`Cleaned up ${deletedCount} old notifications`);
+    return deletedCount;
+  }
+
   private renderTemplate(template: string, variables: Record<string, any>): string {
     let rendered = template;
 
@@ -396,18 +568,40 @@ The Nexa Team`,
   private convertToHtml(text: string): string {
     // Convert plain text to basic HTML
     return text
-    if (!notificationInstance) {
-      notificationInstance = new NotificationService();
-    }
-    return notificationInstance;
+      .split('\n\n')
+      .map(paragraph => `<p>${paragraph.replace(/\n/g, '<br>')}</p>`)
+      .join('\n');
   }
+
+  private generateWebhookSignature(notification: Notification): string {
+    const secret = process.env.WEBHOOK_SECRET || 'your-webhook-secret';
+    const data = JSON.stringify(notification);
+
+    // Use HMAC for signature
+    const crypto = require('crypto');
+    return crypto
+      .createHmac('sha256', secret)
+      .update(data)
+      .digest('hex');
+  }
+}
+
+// Singleton instance
+let notificationInstance: NotificationService;
+
+export function getNotificationService(): NotificationService {
+  if (!notificationInstance) {
+    notificationInstance = new NotificationService();
+  }
+  return notificationInstance;
+}
 
 // Convenience functions for common use cases
 export async function notifyProjectStatus(
-    projectId: string,
-    status: 'started' | 'completed' | 'failed',
-    error?: Error
-  ): Promise<void> {
+  projectId: string,
+  status: 'started' | 'completed' | 'failed',
+  error?: Error
+): Promise<void> {
   const notificationService = getNotificationService();
 
   switch (status) {
