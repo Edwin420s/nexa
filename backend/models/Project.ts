@@ -1,16 +1,6 @@
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
-import mongoose, { Document, Schema } from 'mongoose';
-=======
 import mongoose, { Document, Schema, Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
 import logger from '../utils/logger';
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
-=======
-import mongoose, { Document, Schema, Model } from 'mongoose';
-import { v4 as uuidv4 } from 'uuid';
-import logger from '../utils/logger';
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
 
 export interface IAgentOutput {
   timestamp: Date;
@@ -168,12 +158,92 @@ ProjectSchema.index({ user: 1, status: 1 });
 ProjectSchema.index({ createdAt: -1 });
 ProjectSchema.index({ 'analytics.confidenceScore': -1 });
 
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
+// Add indexes
+ProjectSchema.index({ user: 1, status: 1 });
+ProjectSchema.index({ 'agents.status': 1 });
+ProjectSchema.index({ createdAt: -1 });
+
+// Add pre-save hook to set timestamps
+ProjectSchema.pre<IProject>('save', function(next) {
+  const now = new Date();
+  this.updatedAt = now;
+  if (!this.createdAt) {
+    this.createdAt = now;
+  }
+  next();
+});
+
+// Add method to add an agent to the project
+ProjectSchema.methods.addAgent = function(agent: {
+  name: string;
+  model: string;
+  status?: 'idle' | 'running' | 'completed' | 'failed';
+  outputs?: IAgentOutput[];
+}) {
+  this.agents.push({
+    name: agent.name,
+    model: agent.model,
+    status: agent.status || 'idle',
+    outputs: agent.outputs || []
+  });
+  return this.save();
+};
+
+// Add method to update agent status
+ProjectSchema.methods.updateAgentStatus = function(agentName: string, status: 'idle' | 'running' | 'completed' | 'failed') {
+  const agent = this.agents.find((a: any) => a.name === agentName);
+  if (agent) {
+    agent.status = status;
+    if (status === 'completed' || status === 'failed') {
+      this.completedAt = new Date();
+    }
+    return this.save();
+  }
+  throw new Error(`Agent ${agentName} not found in project ${this._id}`);
+};
+
+// Add method to add agent output
+ProjectSchema.methods.addAgentOutput = function(agentName: string, output: Omit<IAgentOutput, 'timestamp'>) {
+  const agent = this.agents.find((a: any) => a.name === agentName);
+  if (agent) {
+    agent.outputs.push({
+      ...output,
+      timestamp: new Date()
+    });
+    return this.save();
+  }
+  throw new Error(`Agent ${agentName} not found in project ${this._id}`);
+};
+
+// Add method to update project analytics
+ProjectSchema.methods.updateAnalytics = function(updates: Partial<IProject['analytics']>) {
+  this.analytics = { ...this.analytics, ...updates };
+  return this.save();
+};
+
+// Add static method to find projects by status
+ProjectSchema.statics.findByStatus = function(status: IProject['status']) {
+  return this.find({ status });
+};
+
+// Add static method to find projects by user
+ProjectSchema.statics.findByUser = function(userId: string) {
+  return this.find({ user: userId });
+};
+
+// Add middleware to clean up related data when project is deleted
+ProjectSchema.pre('remove', async function(next) {
+  try {
+    // Clean up any related data here
+    // For example: delete associated files, tasks, etc.
+    next();
+  } catch (error: any) {
+    logger.error(`Error cleaning up project ${this._id}:`, error);
+    next(error);
+  }
+});
+
 export const Project = mongoose.model<IProject>('Project', ProjectSchema);
-=======
-=======
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
 // Add indexes
 ProjectSchema.index({ user: 1, status: 1 });
 ProjectSchema.index({ 'agents.status': 1 });
