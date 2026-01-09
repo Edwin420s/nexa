@@ -1,14 +1,3 @@
-import { getCache } from '../services/cache';
-import { getRateLimiter } from '../services/rate-limiter';
-import { getFileStorage } from '../services/file-storage';
-import { getGeminiService } from '../services/gemini';
-import logger from '../utils/logger';
-
-const router = express.Router();
-
-// All admin routes require admin role
-router.use(authenticate, authorize('admin'));
-
 // Get system stats
 router.get('/stats/system', async (req, res, next) => {
   try {
@@ -502,7 +491,7 @@ async function checkDatabaseHealth(): Promise<boolean> {
   }
 }
 
-async function checkGeminiStatus(): Promise<{ healthy: boolean; models?: string[] }> {
+async function checkGeminiStatus(): Promise<{ healthy: boolean; models?: string[]; error?: string }> {
   try {
     const geminiService = getGeminiService();
     // Try a simple call to check if API is accessible

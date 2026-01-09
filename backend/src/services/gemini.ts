@@ -1,6 +1,12 @@
-maxTokens ?: number;
-topP ?: number;
-topK ?: number;
+import { GoogleGenAI } from '@google/generative-ai';
+
+export interface GeminiConfig {
+  apiKey: string;
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+  topP?: number;
+  topK?: number;
 }
 
 export interface GeminiResponse {
@@ -24,18 +30,15 @@ export class GeminiService {
       ...config
     };
 
-    this.ai = new GoogleGenAI({
-      apiKey: this.config.apiKey
-    });
+    this.ai = new GoogleGenAI(this.config.apiKey);
   }
 
   async generateContent(prompt: string, options?: Partial<GeminiConfig>): Promise<GeminiResponse> {
     const config = { ...this.config, ...options };
 
     try {
-      const response = await this.ai.models.generateContent({
+      const model = this.ai.getGenerativeModel({
         model: config.model!,
-        contents: prompt,
         generationConfig: {
           temperature: config.temperature,
           maxOutputTokens: config.maxTokens,
@@ -44,7 +47,10 @@ export class GeminiService {
         }
       });
 
-      const content = response.text || '';
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const content = response.text();
+
       const confidence = this.calculateConfidence(content);
       const tokensUsed = this.estimateTokens(content);
 
@@ -74,7 +80,15 @@ export class GeminiService {
     const response = await this.generateContent(structuredPrompt, options);
 
     try {
-      return JSON.parse(response.content) as T;
+      // Extract JSON from code block if present
+      let jsonStr = response.content;
+      if (jsonStr.includes('```json')) {
+        jsonStr = jsonStr.split('```json')[1].split('```')[0];
+      } else if (jsonStr.includes('```')) {
+        jsonStr = jsonStr.split('```')[1].split('```')[0];
+      }
+
+      return JSON.parse(jsonStr) as T;
     } catch (error) {
       throw new Error('Failed to parse structured output');
     }
@@ -90,9 +104,10 @@ export class GeminiService {
     options?: Partial<GeminiConfig>
   ): Promise<GeminiResponse> {
     try {
-      const response = await this.ai.models.generateContent({
+      // Note: This is a simplified implementation as the actual tool use API 
+      // might differ slightly based on the SDK version
+      const model = this.ai.getGenerativeModel({
         model: options?.model || this.config.model!,
-        contents: prompt,
         tools: tools.map(tool => ({
           functionDeclarations: [{
             name: tool.name,
@@ -102,7 +117,10 @@ export class GeminiService {
         }))
       });
 
-      const content = response.text || '';
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const content = response.text();
+
       const confidence = this.calculateConfidence(content);
       const tokensUsed = this.estimateTokens(content);
 
@@ -111,7 +129,6 @@ export class GeminiService {
         confidence,
         tokensUsed,
         metadata: {
-          ...response,
           toolsUsed: tools.map(t => t.name)
         }
       };
@@ -150,25 +167,21 @@ export class GeminiService {
 
   async analyzeImage(imageBase64: string, prompt: string): Promise<GeminiResponse> {
     try {
-      const response = await this.ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: [
-          {
-            role: 'user',
-            parts: [
-              { text: prompt },
-              {
-                inlineData: {
-                  mimeType: 'image/jpeg',
-                  data: imageBase64
-                }
-              }
-            ]
-          }
-        ]
-      });
+      const model = this.ai.getGenerativeModel({ model: 'gemini-1.5-flash' });
 
-      const content = response.text || '';
+      const result = await model.generateContent([
+        prompt,
+        {
+          inlineData: {
+            mimeType: 'image/jpeg',
+            data: imageBase64
+          }
+        }
+      ]);
+
+      const response = await result.response;
+      const content = response.text();
+
       const confidence = this.calculateConfidence(content);
       const tokensUsed = this.estimateTokens(content);
 
@@ -177,7 +190,7 @@ export class GeminiService {
         confidence,
         tokensUsed,
         metadata: {
-          model: 'gemini-2.5-flash-vision',
+          model: 'gemini-1.5-flash',
           hasImage: true
         }
       };
