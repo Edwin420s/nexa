@@ -16,10 +16,10 @@ const router = Router();
 router.use(authenticate);
 
 // Project routes
-router.post('/', validate(createProjectSchema), createProject);
+router.post('/', validate({ body: createProjectSchema }), createProject);
 router.get('/', getProjects);
 router.get('/:id', getProject);
-router.patch('/:id', validate(updateProjectSchema), updateProject);
+router.patch('/:id', validate({ body: updateProjectSchema }), updateProject);
 router.delete('/:id', deleteProject);
 
 export default router;
