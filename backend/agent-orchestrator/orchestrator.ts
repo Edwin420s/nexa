@@ -1,5 +1,9 @@
 <<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
 import { Project, IProject } from '../models/Project';
+=======
+import { Project, IProject, IAgentOutput } from '../models/Project';
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 =======
 import { Project, IProject, IAgentOutput } from '../models/Project';
 >>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
@@ -8,7 +12,10 @@ import { ConfidenceService } from '../services/confidence';
 import { getStreamingService } from '../services/streaming';
 import logger from '../utils/logger';
 <<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
 =======
+=======
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from 'events';
 
@@ -48,6 +55,9 @@ export class AgentError extends OrchestratorError {
     this.name = 'AgentError';
   }
 }
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
+=======
 >>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 
 export interface AgentTask {
@@ -68,6 +78,7 @@ export interface OrchestratorConfig {
   timeoutMs: number;
 }
 
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
 <<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
 export class AgentOrchestrator {
   private config: OrchestratorConfig = {
@@ -101,6 +112,8 @@ export class AgentOrchestrator {
       const tasks = this.generateTasksFromProject(project);
       const results = await this.executeAgentTasks(projectId, tasks);
 =======
+=======
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 export class AgentOrchestrator extends EventEmitter {
   private config: OrchestratorConfig;
   private activeTasks: Map<string, { projectId: string; taskId: string; startTime: Date }> = new Map();
@@ -187,6 +200,9 @@ export class AgentOrchestrator extends EventEmitter {
         status: 'running',
         startedAt: project.startedAt
       });
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
+=======
 >>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 
       // Process results

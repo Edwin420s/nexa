@@ -1,5 +1,11 @@
 <<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
 import mongoose, { Document, Schema } from 'mongoose';
+=======
+import mongoose, { Document, Schema, Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
+import logger from '../utils/logger';
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
 =======
 import mongoose, { Document, Schema, Model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
@@ -163,8 +169,11 @@ ProjectSchema.index({ createdAt: -1 });
 ProjectSchema.index({ 'analytics.confidenceScore': -1 });
 
 <<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
 export const Project = mongoose.model<IProject>('Project', ProjectSchema);
 =======
+=======
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
 // Add indexes
 ProjectSchema.index({ user: 1, status: 1 });
 ProjectSchema.index({ 'agents.status': 1 });
@@ -290,5 +299,9 @@ ProjectSchema.pre('remove', async function(next) {
 
 const Project = mongoose.model<IProject>('Project', ProjectSchema);
 
+<<<<<<< D:\Projects\New folder (2)\nexa\backend\models\Project.ts
+export default Project;
+>>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
+=======
 export default Project;
 >>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\models\Project.ts
