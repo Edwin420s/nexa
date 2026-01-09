@@ -127,7 +127,7 @@ export class FileStorageService {
 
     // Get file stats
     const stats = await fs.stat(filePath);
-    
+
     // Detect MIME type
     const mimeType = this.detectMimeType(fileName, filePath);
 
@@ -155,7 +155,7 @@ export class FileStorageService {
     await this.saveMetadata(fileMetadata);
 
     logger.info(`File saved: ${fileId} (${safeName}) for user ${userId}`);
-    
+
     return fileMetadata;
   }
 
@@ -174,7 +174,7 @@ export class FileStorageService {
       path.dirname(metadata.path),
       `${metadata.id}.metadata.json`
     );
-    
+
     await fs.writeFile(
       metadataPath,
       JSON.stringify(metadata, null, 2),
@@ -223,11 +223,11 @@ export class FileStorageService {
       }
 
       const content = Buffer.concat(chunks);
-      
+
       // Return as string for text files
-      if (file.metadata.mimeType.startsWith('text/') || 
-          file.metadata.mimeType.includes('json') ||
-          file.metadata.mimeType.includes('javascript')) {
+      if (file.metadata.mimeType.startsWith('text/') ||
+        file.metadata.mimeType.includes('json') ||
+        file.metadata.mimeType.includes('javascript')) {
         return content.toString('utf8');
       }
 
@@ -268,82 +268,93 @@ export class FileStorageService {
       logger.error(`Failed to delete file ${fileId}:`, error);
       return false;
     }
-  }
+  async deleteUserFiles(userId: string): Promise < void> {
+      try {
+        const files = await this.listFiles(userId);
+        for(const file of files) {
+          await this.deleteFile(file.id, userId);
+        }
+      logger.info(`Deleted all files for user ${userId}`);
+      } catch(error) {
+        logger.error(`Failed to delete user files for ${userId}:`, error);
+        throw error;
+      }
+    }
 
   async listFiles(
-    userId?: string,
-    projectId?: string,
-    options?: {
-      limit?: number;
-      offset?: number;
-      sortBy?: keyof FileMetadata;
-      sortOrder?: 'asc' | 'desc';
-    }
-  ): Promise<FileMetadata[]> {
-    const files: FileMetadata[] = [];
-    const basePath = path.join(this.config.basePath, 'projects');
-
-    try {
-      if (userId) {
-        // List files for specific user
-        const userPath = path.join(basePath, userId);
-        await this.scanDirectoryForMetadata(userPath, files);
-      } else {
-        // List all files (admin only)
-        const users = await fs.readdir(basePath);
-        for (const user of users) {
-          const userPath = path.join(basePath, user);
-          await this.scanDirectoryForMetadata(userPath, files);
-        }
+      userId ?: string,
+      projectId ?: string,
+      options ?: {
+        limit?: number;
+        offset?: number;
+        sortBy?: keyof FileMetadata;
+        sortOrder?: 'asc' | 'desc';
       }
+    ): Promise < FileMetadata[] > {
+      const files: FileMetadata[] = [];
+      const basePath = path.join(this.config.basePath, 'projects');
+
+      try {
+        if(userId) {
+          // List files for specific user
+          const userPath = path.join(basePath, userId);
+          await this.scanDirectoryForMetadata(userPath, files);
+        } else {
+          // List all files (admin only)
+          const users = await fs.readdir(basePath);
+          for(const user of users) {
+            const userPath = path.join(basePath, user);
+            await this.scanDirectoryForMetadata(userPath, files);
+          }
+        }
 
       // Filter by project if specified
       let filteredFiles = files;
-      if (projectId) {
-        filteredFiles = files.filter(file => file.projectId === projectId);
-      }
+        if(projectId) {
+          filteredFiles = files.filter(file => file.projectId === projectId);
+        }
 
       // Apply sorting
       const { sortBy = 'createdAt', sortOrder = 'desc' } = options || {};
-      filteredFiles.sort((a, b) => {
-        const aVal = a[sortBy];
-        const bVal = b[sortBy];
-        
-        if (aVal instanceof Date && bVal instanceof Date) {
-          return sortOrder === 'asc' 
-            ? aVal.getTime() - bVal.getTime()
-            : bVal.getTime() - aVal.getTime();
-        }
-        
-        if (typeof aVal === 'string' && typeof bVal === 'string') {
-          return sortOrder === 'asc'
-            ? aVal.localeCompare(bVal)
-            : bVal.localeCompare(aVal);
-        }
-        
-        return 0;
-      });
+        filteredFiles.sort((a, b) => {
+          const aVal = a[sortBy];
+          const bVal = b[sortBy];
 
-      // Apply pagination
-      const { limit, offset = 0 } = options || {};
-      if (limit) {
-        return filteredFiles.slice(offset, offset + limit);
-      }
+          if (aVal instanceof Date && bVal instanceof Date) {
+            return sortOrder === 'asc'
+              ? aVal.getTime() - bVal.getTime()
+              : bVal.getTime() - aVal.getTime();
+          }
+
+          if (typeof aVal === 'string' && typeof bVal === 'string') {
+            return sortOrder === 'asc'
+              ? aVal.localeCompare(bVal)
+              : bVal.localeCompare(aVal);
+          }
+
+          return 0;
+        });
+
+        // Apply pagination
+        const { limit, offset = 0 } = options || {};
+        if(limit) {
+          return filteredFiles.slice(offset, offset + limit);
+        }
 
       return filteredFiles;
-    } catch (error) {
-      logger.error('Failed to list files:', error);
-      return [];
+      } catch(error) {
+        logger.error('Failed to list files:', error);
+        return [];
+      }
     }
-  }
 
   private async scanDirectoryForMetadata(dirPath: string, results: FileMetadata[]): Promise<void> {
     try {
       const entries = await fs.readdir(dirPath, { withFileTypes: true });
-      
+
       for (const entry of entries) {
         const fullPath = path.join(dirPath, entry.name);
-        
+
         if (entry.isDirectory()) {
           await this.scanDirectoryForMetadata(fullPath, results);
         } else if (entry.name.endsWith('.metadata.json')) {
@@ -370,7 +381,7 @@ export class FileStorageService {
     userId?: string
   ): Promise<string> {
     const zipPath = path.join(this.config.basePath, 'exports', `${zipName}.zip`);
-    
+
     // Ensure exports directory exists
     await fs.mkdir(path.dirname(zipPath), { recursive: true });
 
@@ -476,7 +487,7 @@ export class FileStorageService {
     byType: Record<string, { files: number; size: number }>;
   }> {
     const files = await this.listFiles();
-    
+
     const stats = {
       totalFiles: files.length,
       totalSize: 0,
@@ -552,7 +563,7 @@ export class FileStorageService {
 
   private detectMimeType(fileName: string, filePath: string): string {
     const ext = path.extname(fileName).toLowerCase();
-    
+
     const mimeTypes: Record<string, string> = {
       '.txt': 'text/plain',
       '.md': 'text/markdown',
@@ -593,11 +604,11 @@ export class FileStorageService {
 
   async backupDatabase(backupName: string): Promise<string> {
     const backupPath = path.join(this.config.basePath, 'backups', `${backupName}.zip`);
-    
+
     // This would require database backup logic
     // For now, just create an empty backup file
     await fs.writeFile(backupPath, 'Database backup placeholder');
-    
+
     logger.info(`Database backup created: ${backupPath}`);
     return backupPath;
   }

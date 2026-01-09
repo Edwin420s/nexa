@@ -82,7 +82,7 @@ export class AuthController {
   static async updateProfile(req: Request, res: Response, next: NextFunction) {
     try {
       const { name, avatar, settings } = req.body;
-      const userId = req.user.userId;
+      const userId = (req as any).user.id;
 
       const user = await AuthService.updateProfile(userId, { name, avatar, settings });
 
@@ -103,7 +103,7 @@ export class AuthController {
   static async changePassword(req: Request, res: Response, next: NextFunction) {
     try {
       const { currentPassword, newPassword } = req.body;
-      const userId = req.user.userId;
+      const userId = (req as any).user.id;
 
       if (!currentPassword || !newPassword) {
         throw new BadRequestError('Current password and new password are required');

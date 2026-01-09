@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/summary', authenticate, async (req: any, res, next) => {
   try {
     const { startDate, endDate } = req.query;
-    
+
     const matchStage: any = {
       user: req.user._id
     };
@@ -163,7 +163,7 @@ router.get('/summary', authenticate, async (req: any, res, next) => {
       recentActivity: recentActivity.map(activity => ({
         agent: activity.agent,
         action: activity.action,
-        project: activity.project?.title || 'Unknown',
+        project: (activity.project as any)?.title || 'Unknown',
         timestamp: activity.timestamp
       }))
     };
