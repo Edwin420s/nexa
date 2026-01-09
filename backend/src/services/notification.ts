@@ -386,7 +386,7 @@ The Nexa Team`,
     const project = await Project.findById(projectId).populate('user');
     if (!project) return;
 
-    const user = project.user;
+    const user = project.user as any;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     await this.sendNotification(user._id.toString(), 'project_started', {
@@ -403,7 +403,7 @@ The Nexa Team`,
     const project = await Project.findById(projectId).populate('user');
     if (!project) return;
 
-    const user = project.user;
+    const user = project.user as any;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     await this.sendNotification(user._id.toString(), 'project_completed', {
@@ -420,7 +420,7 @@ The Nexa Team`,
     const project = await Project.findById(projectId).populate('user');
     if (!project) return;
 
-    const user = project.user;
+    const user = project.user as any;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
 
     await this.sendNotification(user._id.toString(), 'project_failed', {

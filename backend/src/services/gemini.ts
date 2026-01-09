@@ -1,4 +1,4 @@
-import { GoogleGenAI } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export interface GeminiConfig {
   apiKey: string;
@@ -17,7 +17,7 @@ export interface GeminiResponse {
 }
 
 export class GeminiService {
-  private ai: GoogleGenAI;
+  private ai: GoogleGenerativeAI;
   private config: GeminiConfig;
 
   constructor(config: GeminiConfig) {
@@ -30,7 +30,7 @@ export class GeminiService {
       ...config
     };
 
-    this.ai = new GoogleGenAI(this.config.apiKey);
+    this.ai = new GoogleGenerativeAI(this.config.apiKey);
   }
 
   async generateContent(prompt: string, options?: Partial<GeminiConfig>): Promise<GeminiResponse> {

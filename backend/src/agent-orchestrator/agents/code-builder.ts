@@ -21,6 +21,8 @@ export interface ProjectStructure {
     type: 'production' | 'development';
   }>;
   setupInstructions: string;
+  confidence?: number;
+  metadata?: Record<string, any>;
 }
 
 export class CodeBuilderAgent {
