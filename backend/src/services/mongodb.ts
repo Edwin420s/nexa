@@ -1,35 +1,40 @@
-import mongoose from 'mongoose';
+// services/mongodb.ts
+import mongoose, { ConnectOptions } from 'mongoose';
 import logger from '../utils/logger';
-
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nexa';
 
 export const connectDB = async (): Promise<void> => {
   try {
-    if (!MONGODB_URI) {
-      throw new Error('MONGODB_URI is not defined in environment variables');
-    }
+    const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/nexa';
+    
+    const options: ConnectOptions = {
+      autoIndex: process.env.NODE_ENV !== 'production', // Don't build indexes in production
+      maxPoolSize: 10, // Maintain up to 10 socket connections
+      serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
+      socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
+      family: 4 // Use IPv4, skip trying IPv6
+    };
 
-    await mongoose.connect(MONGODB_URI, {
-      serverSelectionTimeoutMS: 5000,
-      maxPoolSize: 10,
-    });
-
-    logger.info('Connected to MongoDB');
-
-    mongoose.connection.on('error', (err) => {
+    await mongoose.connect(mongoURI, options);
+    
+    logger.info('MongoDB connected successfully');
+    
+    // Connection events
+    mongoose.connection.on('error', (err: Error) => {
       logger.error('MongoDB connection error:', err);
     });
-
+    
     mongoose.connection.on('disconnected', () => {
       logger.warn('MongoDB disconnected');
     });
-
+    
     mongoose.connection.on('reconnected', () => {
       logger.info('MongoDB reconnected');
     });
-
-  } catch (error) {
-    logger.error('MongoDB connection failed:', error);
+    
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+    logger.error('MongoDB connection failed:', errorMessage);
+    // Exit process with failure
     process.exit(1);
   }
 };
@@ -39,8 +44,7 @@ export const disconnectDB = async (): Promise<void> => {
     await mongoose.disconnect();
     logger.info('MongoDB disconnected');
   } catch (error) {
-    logger.error('Error disconnecting from MongoDB:', error);
-    throw error;
+    logger.error('Error disconnecting MongoDB:', error);
   }
 };
 

@@ -1,79 +1,85 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcryptjs';
-import logger from '../utils/logger';
 
 export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  role: 'user' | 'admin';
-  isEmailVerified: boolean;
+  avatar?: string;
+  projects: mongoose.Types.ObjectId[];
+  settings: {
+    emailNotifications: boolean;
+    defaultModel: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-const userSchema = new Schema<IUser>(
-  {
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-      lowercase: true,
-    },
-    password: {
-      type: String,
-      required: true,
-      minlength: 8,
-      select: false,
-    },
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    role: {
-      type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
-    },
-    isEmailVerified: {
-      type: Boolean,
-      default: false,
-    },
+const UserSchema = new Schema<IUser>({
+  email: {
+    type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
   },
-  {
-    timestamps: true,
-    toJSON: {
-      transform: (_, ret) => {
-        delete ret.password;
-        return ret;
-      },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  projects: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Project'
+  }],
+  settings: {
+    emailNotifications: {
+      type: Boolean,
+      default: true
     },
+    defaultModel: {
+      type: String,
+      default: 'gemini-2.5-flash',
+      enum: ['gemini-3-pro', 'gemini-2.5-flash', 'gemini-2.5-pro']
+    }
   }
-);
+}, {
+  timestamps: true
+});
 
 // Hash password before saving
-userSchema.pre<IUser>('save', async function (next) {
+UserSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
-
+  
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
     next();
-  } catch (error) {
-    logger.error('Error hashing password:', error);
-    throw error;
+  } catch (error: any) {
+    next(error);
   }
 });
 
-// Method to compare passwords
-userSchema.methods.comparePassword = async function (
-  candidatePassword: string
-): Promise<boolean> {
+// Method to compare password
+UserSchema.methods.comparePassword = async function(candidatePassword: string): Promise<boolean> {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Indexes
-userSchema.index({ email: 1 }, { unique: true });
+// Remove password from JSON output
+UserSchema.methods.toJSON = function() {
+  const obj = this.toObject();
+  delete obj.password;
+  return obj;
+};
 
-export const User = mongoose.model<IUser>('User', userSchema);
+export const User = mongoose.model<IUser>('User', UserSchema);

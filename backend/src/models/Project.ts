@@ -1,170 +1,310 @@
-import { Document, Schema, model } from 'mongoose';
-import { IUser } from './User';
+import mongoose, { Document, Schema, Model } from 'mongoose';
+import { v4 as uuidv4 } from 'uuid';
 import logger from '../utils/logger';
 
-export interface IProject extends Document {
-  name: string;
-  description: string;
-  goal: string;
-  status: 'planning' | 'in_progress' | 'paused' | 'completed' | 'failed';
-  createdBy: IUser['_id'];
-  team: IUser['_id'][];
-  agents: Array<{
-    name: string;
-    role: string;
-    model: string;
-    status: 'idle' | 'running' | 'completed' | 'failed';
-    lastRun?: Date;
-    config: Record<string, any>;
-  }>;
-  settings: {
-    visibility: 'private' | 'team' | 'public';
-    allowFeedback: boolean;
-    notifications: {
-      email: boolean;
-      inApp: boolean;
-    };
-  };
-  progress: {
-    currentStep: number;
-    totalSteps: number;
-    percentage: number;
-  };
-  metadata: {
-    createdAt: Date;
-    updatedAt: Date;
-    completedAt?: Date;
-  };
+export interface IAgentOutput {
+  timestamp: Date;
+  agent: string;
+  content: string;
+  confidence: number;
+  metadata?: Record<string, any>;
 }
 
-const projectSchema = new Schema<IProject>(
-  {
+export interface IProject extends Document {
+  user: mongoose.Types.ObjectId;
+  title: string;
+  description: string;
+  goal: string;
+  status: 'draft' | 'running' | 'paused' | 'completed' | 'failed';
+  agents: {
+    name: string;
+    model: string;
+    status: 'idle' | 'running' | 'completed' | 'failed';
+    outputs: IAgentOutput[];
+  }[];
+  settings: {
+    streaming: boolean;
+    autoSave: boolean;
+    confidenceThreshold: number;
+    maxIterations: number;
+  };
+  analytics: {
+    confidenceScore: number;
+    executionTime: number;
+    tokensUsed: number;
+    iterations: number;
+  };
+  files: Array<{
+    name: string;
+    path: string;
+    type: string;
+    size: number;
+  }>;
+  createdAt: Date;
+  updatedAt: Date;
+  startedAt?: Date;
+  completedAt?: Date;
+
+  // Methods
+  addAgent(agent: { name: string; model: string; status?: string; outputs?: IAgentOutput[] }): Promise<IProject>;
+  updateAgentStatus(agentName: string, status: string): Promise<IProject>;
+  addAgentOutput(agentName: string, output: Omit<IAgentOutput, 'timestamp'>): Promise<IProject>;
+  updateAnalytics(updates: Partial<IProject['analytics']>): Promise<IProject>;
+}
+
+interface IProjectModel extends Model<IProject> {
+  findByStatus(status: string): Promise<IProject[]>;
+  findByUser(userId: string): Promise<IProject[]>;
+  createProject(data: { user: string; title: string; description: string; goal: string }): Promise<IProject>;
+}
+
+const ProjectSchema = new Schema<IProject>({
+  user: {
+    type: Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  title: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  description: {
+    type: String,
+    default: ''
+  },
+  goal: {
+    type: String,
+    required: true
+  },
+  status: {
+    type: String,
+    enum: ['draft', 'running', 'paused', 'completed', 'failed'],
+    default: 'draft'
+  },
+  agents: [{
     name: {
       type: String,
       required: true,
-      trim: true,
+      enum: ['researcher', 'code-builder', 'summarizer', 'visual-generator']
     },
-    description: {
+    model: {
       type: String,
-      required: true,
-    },
-    goal: {
-      type: String,
-      required: true,
+      default: 'gemini-2.5-flash',
+      enum: ['gemini-3-pro', 'gemini-2.5-flash', 'gemini-2.5-pro', 'nano-banana', 'veo-3.1']
     },
     status: {
       type: String,
-      enum: ['planning', 'in_progress', 'paused', 'completed', 'failed'],
-      default: 'planning',
+      enum: ['idle', 'running', 'completed', 'failed'],
+      default: 'idle'
     },
-    createdBy: {
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-      required: true,
-    },
-    team: [{
-      type: Schema.Types.ObjectId,
-      ref: 'User',
-    }],
-    agents: [{
-      name: {
-        type: String,
-        required: true,
-      },
-      role: {
-        type: String,
-        required: true,
-      },
-      model: {
-        type: String,
-        required: true,
-      },
-      status: {
-        type: String,
-        enum: ['idle', 'running', 'completed', 'failed'],
-        default: 'idle',
-      },
-      lastRun: {
+    outputs: [{
+      timestamp: {
         type: Date,
+        default: Date.now
       },
-      config: {
-        type: Schema.Types.Mixed,
-        default: {},
-      },
-    }],
-    settings: {
-      visibility: {
-        type: String,
-        enum: ['private', 'team', 'public'],
-        default: 'private',
-      },
-      allowFeedback: {
-        type: Boolean,
-        default: true,
-      },
-      notifications: {
-        email: {
-          type: Boolean,
-          default: true,
-        },
-        inApp: {
-          type: Boolean,
-          default: true,
-        },
-      },
-    },
-    progress: {
-      currentStep: {
+      content: String,
+      confidence: {
         type: Number,
-        default: 0,
-      },
-      totalSteps: {
-        type: Number,
-        default: 1,
-      },
-      percentage: {
-        type: Number,
-        default: 0,
         min: 0,
-        max: 100,
+        max: 1,
+        default: 0.5
       },
+      metadata: Schema.Types.Mixed
+    }]
+  }],
+  settings: {
+    streaming: {
+      type: Boolean,
+      default: true
     },
-    metadata: {
-      createdAt: {
-        type: Date,
-        default: Date.now,
-      },
-      updatedAt: {
-        type: Date,
-        default: Date.now,
-      },
-      completedAt: {
-        type: Date,
-      },
+    autoSave: {
+      type: Boolean,
+      default: true
     },
+    confidenceThreshold: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: 0.7
+    },
+    maxIterations: {
+      type: Number,
+      default: 10,
+      min: 1,
+      max: 100
+    }
   },
-  {
-    timestamps: true,
-    toJSON: {
-      virtuals: true,
-      transform: (doc, ret) => {
-        delete ret.__v;
-        delete ret._id;
-        return ret;
-      },
+  analytics: {
+    confidenceScore: {
+      type: Number,
+      default: 0
     },
-  }
-);
+    executionTime: {
+      type: Number,
+      default: 0
+    },
+    tokensUsed: {
+      type: Number,
+      default: 0
+    },
+    iterations: {
+      type: Number,
+      default: 0
+    }
+  },
+  files: [{
+    name: String,
+    path: String,
+    type: String,
+    size: Number
+  }],
+  startedAt: Date,
+  completedAt: Date
+}, {
+  timestamps: true
+});
 
-// Update the updatedAt timestamp before saving
-projectSchema.pre('save', function (next) {
-  this.metadata.updatedAt = new Date();
+// Indexes for faster queries
+ProjectSchema.index({ user: 1, status: 1 });
+ProjectSchema.index({ createdAt: -1 });
+ProjectSchema.index({ 'analytics.confidenceScore': -1 });
+ProjectSchema.index({ 'agents.status': 1 });
+
+// Add pre-save hook to set timestamps
+ProjectSchema.pre<IProject>('save', function (next) {
+  const now = new Date();
+  this.updatedAt = now;
+  if (!this.createdAt) {
+    this.createdAt = now;
+  }
   next();
 });
 
-// Add indexes
-projectSchema.index({ name: 'text', description: 'text', goal: 'text' });
-projectSchema.index({ createdBy: 1, status: 1 });
-projectSchema.index({ 'metadata.createdAt': -1 });
+// Add method to add an agent to the project
+ProjectSchema.methods.addAgent = function (agent: {
+  name: string;
+  model: string;
+  status?: 'idle' | 'running' | 'completed' | 'failed';
+  outputs?: IAgentOutput[];
+}) {
+  this.agents.push({
+    name: agent.name,
+    model: agent.model,
+    status: agent.status || 'idle',
+    outputs: agent.outputs || []
+  });
+  return this.save();
+};
 
-export const Project = model<IProject>('Project', projectSchema);
+// Add method to update agent status
+ProjectSchema.methods.updateAgentStatus = function (agentName: string, status: 'idle' | 'running' | 'completed' | 'failed') {
+  const agent = this.agents.find((a: any) => a.name === agentName);
+  if (agent) {
+    agent.status = status;
+    if (status === 'completed' || status === 'failed') {
+      this.completedAt = new Date();
+    }
+    return this.save();
+  }
+  throw new Error(`Agent ${agentName} not found in project ${this._id}`);
+};
+
+// Add method to add agent output
+ProjectSchema.methods.addAgentOutput = function (agentName: string, output: Omit<IAgentOutput, 'timestamp'>) {
+  const agent = this.agents.find((a: any) => a.name === agentName);
+  if (agent) {
+    agent.outputs.push({
+      ...output,
+      timestamp: new Date()
+    });
+    return this.save();
+  }
+  throw new Error(`Agent ${agentName} not found in project ${this._id}`);
+};
+
+// Add method to update project analytics
+ProjectSchema.methods.updateAnalytics = function (updates: Partial<IProject['analytics']>) {
+  this.analytics = { ...this.analytics, ...updates };
+  return this.save();
+};
+
+// Add static method to find projects by status
+ProjectSchema.statics.findByStatus = function (status: IProject['status']) {
+  return this.find({ status });
+};
+
+// Add static method to find projects by user
+ProjectSchema.statics.findByUser = function (userId: string) {
+  return this.find({ user: userId });
+};
+
+// Add static method to create a new project with default settings
+ProjectSchema.statics.createProject = async function (data: {
+  user: string;
+  title: string;
+  description: string;
+  goal: string;
+}) {
+  const project = new this({
+    ...data,
+    status: 'draft',
+    settings: {
+      streaming: true,
+      autoSave: true,
+      confidenceThreshold: 0.7,
+      maxIterations: 10
+    },
+    analytics: {
+      confidenceScore: 0,
+      executionTime: 0,
+      tokensUsed: 0,
+      iterations: 0
+    },
+    files: []
+  });
+
+  return project.save();
+};
+
+// Add query helper for active projects
+ProjectSchema.query.active = function () {
+  return this.where({ status: { $in: ['draft', 'running', 'paused'] } });
+};
+
+// Add query helper for completed projects
+ProjectSchema.query.completed = function () {
+  return this.where({ status: 'completed' });
+};
+
+// Add virtual for project duration
+ProjectSchema.virtual('duration').get(function (this: IProject) {
+  if (!this.startedAt) return 0;
+  const end = this.completedAt || new Date();
+  return end.getTime() - this.startedAt.getTime();
+});
+
+// Add toJSON transform to include virtuals
+ProjectSchema.set('toJSON', {
+  virtuals: true,
+  transform: (doc, ret) => {
+    delete ret.__v;
+    delete ret._id;
+    return ret;
+  }
+});
+
+// Add middleware to clean up related data when project is deleted
+ProjectSchema.pre('remove', async function (next) {
+  try {
+    // Clean up any related data here
+    // For example: delete associated files, tasks, etc.
+    next();
+  } catch (error: any) {
+    logger.error(`Error cleaning up project ${this._id}:`, error);
+    next(error);
+  }
+});
+
+export const Project = mongoose.model<IProject, IProjectModel>('Project', ProjectSchema);
+export default Project;

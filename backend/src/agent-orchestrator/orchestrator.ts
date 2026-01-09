@@ -1,21 +1,8 @@
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
-import { Project, IProject } from '../models/Project';
-=======
 import { Project, IProject, IAgentOutput } from '../models/Project';
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
-=======
-import { Project, IProject, IAgentOutput } from '../models/Project';
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 import { getGeminiService } from '../services/gemini';
 import { ConfidenceService } from '../services/confidence';
 import { getStreamingService } from '../services/streaming';
 import logger from '../utils/logger';
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
-=======
-=======
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 import { v4 as uuidv4 } from 'uuid';
 import { EventEmitter } from 'events';
 
@@ -55,10 +42,6 @@ export class AgentError extends OrchestratorError {
     this.name = 'AgentError';
   }
 }
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
-=======
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 
 export interface AgentTask {
   agentName: string;
@@ -78,42 +61,6 @@ export interface OrchestratorConfig {
   timeoutMs: number;
 }
 
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
-export class AgentOrchestrator {
-  private config: OrchestratorConfig = {
-    maxConcurrentAgents: 3,
-    confidenceThreshold: 0.7,
-    maxIterations: 10,
-    timeoutMs: 300000 // 5 minutes
-  };
-
-  private activeProjects: Map<string, boolean> = new Map();
-
-  async executeProject(projectId: string): Promise<void> {
-    if (this.activeProjects.has(projectId)) {
-      throw new Error(`Project ${projectId} is already being executed`);
-    }
-
-    this.activeProjects.set(projectId, true);
-    const streamingService = getStreamingService();
-
-    try {
-      // Get project
-      const project = await Project.findById(projectId);
-      if (!project) {
-        throw new Error(`Project ${projectId} not found`);
-      }
-
-      // Update project status
-      await streamingService.streamProjectStatus(projectId, 'running', 'Starting agent execution');
-
-      // Execute agents based on project configuration
-      const tasks = this.generateTasksFromProject(project);
-      const results = await this.executeAgentTasks(projectId, tasks);
-=======
-=======
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 export class AgentOrchestrator extends EventEmitter {
   private config: OrchestratorConfig;
   private activeTasks: Map<string, { projectId: string; taskId: string; startTime: Date }> = new Map();
@@ -129,7 +76,7 @@ export class AgentOrchestrator extends EventEmitter {
       maxIterations: Math.min(Math.max(config.maxIterations || 10, 1), 100),
       timeoutMs: Math.min(Math.max(config.timeoutMs || 300000, 60000), 1800000) // 1-30 minutes
     };
-    
+
     // Set up event listeners
     this.setupEventListeners();
   }
@@ -162,7 +109,7 @@ export class AgentOrchestrator extends EventEmitter {
   async executeProject(projectId: string, tasks: AgentTask[] = []): Promise<void> {
     const taskId = uuidv4();
     const startTime = new Date();
-    
+
     try {
       // Validate project ID
       if (!projectId || typeof projectId !== 'string') {
@@ -200,20 +147,27 @@ export class AgentOrchestrator extends EventEmitter {
         status: 'running',
         startedAt: project.startedAt
       });
-<<<<<<< D:\Projects\New folder (2)\nexa\backend\agent-orchestrator\orchestrator.ts
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
-=======
->>>>>>> c:\Users\edwin\.windsurf\worktrees\nexa\nexa-ed3833f2\backend\agent-orchestrator\orchestrator.ts
 
       // Process results
+      // Note: In a real implementation, we would execute tasks here.
+      // For now, we assume tasks are passed or generated elsewhere, or we use the existing logic if available.
+      // The original code had `results` variable which was undefined in this block.
+      // I will add the task generation logic back from the conflicted file if it was there.
+      // Looking at the conflict, `generateTasksFromProject` was used.
+
+      const generatedTasks = this.generateTasksFromProject(project);
+      const results = await this.executeAgentTasks(projectId, generatedTasks);
+
       await this.processResults(projectId, results);
 
       // Update project status
+      const streamingService = getStreamingService();
       await streamingService.streamProjectStatus(projectId, 'completed', 'Project execution completed');
 
       logger.info(`Project ${projectId} executed successfully`);
 
     } catch (error) {
+      const streamingService = getStreamingService();
       logger.error(`Error executing project ${projectId}:`, error);
       await streamingService.streamProjectStatus(projectId, 'failed', (error as Error).message);
       throw error;
@@ -250,7 +204,7 @@ export class AgentOrchestrator extends EventEmitter {
       4. Potential applications
       
       Format your response in a structured manner.`,
-      
+
       'code-builder': `Based on the project goal: "${projectGoal}"
       
       Generate:
@@ -260,7 +214,7 @@ export class AgentOrchestrator extends EventEmitter {
       4. Dependencies and setup instructions
       
       Provide production-ready code with proper error handling.`,
-      
+
       summarizer: `Summarize the following project: "${projectGoal}"
       
       Create:
@@ -270,7 +224,7 @@ export class AgentOrchestrator extends EventEmitter {
       4. Implementation roadmap
       
       Keep the summary concise but comprehensive.`,
-      
+
       'visual-generator': `Create visual assets for: "${projectGoal}"
       
       Generate:
@@ -355,10 +309,10 @@ export class AgentOrchestrator extends EventEmitter {
 
     // Execute tasks concurrently with limits
     const executingTasks = [];
-    
+
     for (let i = 0; i < tasks.length; i += this.config.maxConcurrentAgents) {
       const batch = tasks.slice(i, i + this.config.maxConcurrentAgents);
-      
+
       const batchPromises = batch.map(async (task) => {
         try {
           // Update agent status
@@ -411,7 +365,7 @@ export class AgentOrchestrator extends EventEmitter {
 
         } catch (error) {
           logger.error(`Error executing agent ${task.agentName}:`, error);
-          
+
           await streamingService.streamAgentUpdate(projectId, task.agentName, {
             status: 'failed',
             error: (error as Error).message
@@ -436,7 +390,7 @@ export class AgentOrchestrator extends EventEmitter {
     const confidences = Object.values(results)
       .map((r: any) => r.confidence)
       .filter((c): c is number => typeof c === 'number');
-    
+
     const averageConfidence = confidences.length > 0
       ? confidences.reduce((a, b) => a + b, 0) / confidences.length
       : 0.5;
@@ -468,7 +422,7 @@ export class AgentOrchestrator extends EventEmitter {
 
     for (const [agentName, result] of Object.entries(results)) {
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-      
+
       switch (agentName) {
         case 'researcher':
           files.push({

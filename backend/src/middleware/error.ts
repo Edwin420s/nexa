@@ -1,110 +1,81 @@
 import { Request, Response, NextFunction } from 'express';
 import logger from '../utils/logger';
-import { ValidationError } from 'joi';
 
-
-export class APIError extends Error {
+export class AppError extends Error {
   statusCode: number;
   isOperational: boolean;
 
-  constructor(message: string, statusCode: number, isOperational = true) {
+  constructor(message: string, statusCode: number) {
     super(message);
     this.statusCode = statusCode;
-    this.isOperational = isOperational;
+    this.isOperational = true;
     Error.captureStackTrace(this, this.constructor);
   }
 }
 
-export const notFound = (req: Request, res: Response) => {
-  res.status(404).json({ message: 'Not Found' });
-};
-
-export const errorHandler = (
-  err: Error | APIError,
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  let statusCode = 500;
-  let message = 'Internal Server Error';
-
-  if (err instanceof APIError) {
-    statusCode = err.statusCode;
-    message = err.message;
-  } else if (err instanceof ValidationError) {
-    statusCode = 400;
-    message = err.details.map(d => d.message).join('; ');
-  }
-
-  if (statusCode >= 500) {
-    logger.error('Server Error:', err);
-  }
-
-  res.status(statusCode).json({
-    status: 'error',
-    statusCode,
+const handleValidationError = (err: any, res: Response) => {
+  const errors = Object.values(err.errors).map((el: any) => el.message);
+  const message = `Invalid input data. ${errors.join('. ')}`;
+  return res.status(400).json({
+    status: 'fail',
     message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 };
 
-interface CustomError extends Error {
-  statusCode?: number;
-  code?: number;
-  errors?: any;
-}
+const handleDuplicateFieldsDB = (err: any, res: Response) => {
+  const value = err.errmsg.match(/(["'])(\?.)*?\1/)[0];
+  const message = `Duplicate field value: ${value}. Please use another value!`;
+  return res.status(400).json({
+    status: 'fail',
+    message,
+  });
+};
+
+const handleJWTError = (res: Response) =>
+  res.status(401).json({
+    status: 'fail',
+    message: 'Invalid token. Please log in again!',
+  });
+
+const handleJWTExpiredError = (res: Response) =>
+  res.status(401).json({
+    status: 'fail',
+    message: 'Your token has expired! Please log in again.',
+  });
 
 export const errorHandler = (
-  err: CustomError,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  let statusCode = err.statusCode || 500;
-  let message = err.message || 'Internal Server Error';
+  err.statusCode = err.statusCode || 500;
+  err.status = err.status || 'error';
 
-  // Handle specific error types
-  if (err.name === 'ValidationError') {
-    statusCode = 400;
-    const errors: Record<string, string> = {};
-    Object.values((err as any).errors).forEach((error: any) => {
-      errors[error.path] = error.message;
+  if (process.env.NODE_ENV === 'development') {
+    logger.error('Error:', {
+      error: err,
+      stack: err.stack,
     });
-    message = 'Validation Error';
-    return res.status(statusCode).json({ success: false, message, errors });
   }
 
-  if (err.name === 'JsonWebTokenError') {
-    statusCode = 401;
-    message = 'Invalid token';
+  let error = { ...err, message: err.message };
+
+  if (error.name === 'ValidationError') return handleValidationError(error, res);
+  if (error.code === 11000) return handleDuplicateFieldsDB(error, res);
+  if (error.name === 'JsonWebTokenError') return handleJWTError(res);
+  if (error.name === 'TokenExpiredError') return handleJWTExpiredError(res);
+
+  if (error.isOperational) {
+    return res.status(error.statusCode).json({
+      status: error.status,
+      message: error.message,
+    });
   }
 
-  if (err.name === 'TokenExpiredError') {
-    statusCode = 401;
-    message = 'Token expired';
-  }
-
-  if (err.code === 11000) {
-    statusCode = 400;
-    message = 'Duplicate field value entered';
-  }
-
-  // Log the error
-  logger.error(`[${statusCode}] ${message}`, {
-    path: req.path,
-    method: req.method,
-    ip: req.ip,
-    stack: process.env.NODE_ENV === 'development' ? err.stack : undefined,
+  logger.error('ERROR 💥', error);
+  return res.status(500).json({
+    status: 'error',
+    message: 'Something went wrong!',
   });
-
-  // Send error response
-  res.status(statusCode).json({
-    success: false,
-    message,
-    ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
-  });
-};
-
-export const notFound = (req: Request, res: Response) => {
-  res.status(404).json({ success: false, message: 'Not Found' });
 };

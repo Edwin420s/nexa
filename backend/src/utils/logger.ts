@@ -1,35 +1,51 @@
 import winston from 'winston';
-import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'path';
 
-const { combine, timestamp, printf, colorize, json } = winston.format;
-
-const logFormat = printf(({ level, message, timestamp, ...meta }) => {
-  return `${timestamp} [${level}]: ${message} ${
-    Object.keys(meta).length ? JSON.stringify(meta, null, 2) : ''
-  }`;
-});
+const logDir = 'logs';
 
 const logger = winston.createLogger({
-  level: process.env.LOG_LEVEL || 'info',
-  format: combine(
-    timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    json(),
-    winston.format.errors({ stack: true })
+  level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
+  format: winston.format.combine(
+    winston.format.timestamp({
+      format: 'YYYY-MM-DD HH:mm:ss'
+    }),
+    winston.format.errors({ stack: true }),
+    winston.format.splat(),
+    winston.format.json()
   ),
   defaultMeta: { service: 'nexa-backend' },
   transports: [
-    new winston.transports.Console({
-      format: combine(colorize(), logFormat),
+    // Write all logs with importance level of 'error' or less to error.log
+    new winston.transports.File({
+      filename: path.join(logDir, 'error.log'),
+      level: 'error',
+      maxsize: 5242880, // 5MB
+      maxFiles: 5
     }),
-    new DailyRotateFile({
-      filename: path.join(process.env.LOG_DIR || 'logs', 'nexa-%DATE%.log'),
-      datePattern: 'YYYY-MM-DD',
-      zippedArchive: true,
-      maxSize: '20m',
-      maxFiles: '14d',
-    }),
-  ],
+    // Write all logs with importance level of 'info' or less to combined.log
+    new winston.transports.File({
+      filename: path.join(logDir, 'combined.log'),
+      maxsize: 5242880, // 5MB
+      maxFiles: 5
+    })
+  ]
 });
+
+// If we're not in production, log to the console as well
+if (process.env.NODE_ENV !== 'production') {
+  logger.add(new winston.transports.Console({
+    format: winston.format.combine(
+      winston.format.colorize(),
+      winston.format.simple()
+    )
+  }));
+}
+
+// Create a stream object for Morgan
+export const stream = {
+  write: (message: string) => {
+    logger.info(message.trim());
+  }
+};
 
 export default logger;
