@@ -59,7 +59,7 @@ export class AuthController {
    */
   static async getCurrentUser(req: Request, res: Response, next: NextFunction) {
     try {
-      const user = await AuthService.getCurrentUser(req.user.userId);
+      const user = await AuthService.getCurrentUser((req as any).user.id);
 
       if (!user) {
         throw new UnauthorizedError('User not found');

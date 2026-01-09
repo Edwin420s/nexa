@@ -46,15 +46,15 @@ export class SecurityService {
 
   // JWT token generation and verification
   generateAccessToken(payload: any): string {
-    return jwt.sign(payload, this.config.jwtSecret, {
-      expiresIn: this.config.tokenExpiry.access
-    });
+    const secret: jwt.Secret = this.config.jwtSecret;
+    const options: jwt.SignOptions = { expiresIn: this.config.tokenExpiry.access };
+    return jwt.sign(payload as object, secret, options);
   }
 
   generateRefreshToken(payload: any): string {
-    return jwt.sign(payload, this.config.jwtSecret, {
-      expiresIn: this.config.tokenExpiry.refresh
-    });
+    const secret: jwt.Secret = this.config.jwtSecret;
+    const options: jwt.SignOptions = { expiresIn: this.config.tokenExpiry.refresh };
+    return jwt.sign(payload as object, secret, options);
   }
 
   verifyToken(token: string): any {
@@ -133,7 +133,7 @@ export class SecurityService {
       'password', '123456', 'qwerty', 'admin', 'welcome',
       'password123', '123456789', '12345678', '12345'
     ];
-    
+
     if (commonPasswords.includes(password.toLowerCase())) {
       score = 0;
       suggestions.push('Avoid common passwords');
@@ -167,12 +167,12 @@ export class SecurityService {
   encryptData(data: string, key: string): string {
     const iv = crypto.randomBytes(16);
     const cipher = crypto.createCipheriv('aes-256-gcm', Buffer.from(key, 'hex'), iv);
-    
+
     let encrypted = cipher.update(data, 'utf8', 'hex');
     encrypted += cipher.final('hex');
-    
+
     const authTag = cipher.getAuthTag();
-    
+
     return iv.toString('hex') + ':' + authTag.toString('hex') + ':' + encrypted;
   }
 
@@ -181,13 +181,13 @@ export class SecurityService {
     const iv = Buffer.from(parts[0], 'hex');
     const authTag = Buffer.from(parts[1], 'hex');
     const encrypted = parts[2];
-    
+
     const decipher = crypto.createDecipheriv('aes-256-gcm', Buffer.from(key, 'hex'), iv);
     decipher.setAuthTag(authTag);
-    
+
     let decrypted = decipher.update(encrypted, 'hex', 'utf8');
     decrypted += decipher.final('utf8');
-    
+
     return decrypted;
   }
 
@@ -219,14 +219,14 @@ export class SecurityService {
     // Check if timestamp is within allowed window (5 minutes)
     const requestTime = parseInt(timestamp, 10);
     const currentTime = Math.floor(Date.now() / 1000);
-    
+
     if (Math.abs(currentTime - requestTime) > 300) {
       return false;
     }
 
     // Reconstruct the signed data
     const data = `${req.method}:${req.path}:${timestamp}:${JSON.stringify(req.body)}`;
-    
+
     return this.verifyHmac(data, signature, secret);
   }
 
@@ -237,7 +237,7 @@ export class SecurityService {
       type: 'password_reset',
       timestamp: Date.now()
     };
-    
+
     return jwt.sign(payload, this.config.jwtSecret, {
       expiresIn: this.config.tokenExpiry.resetPassword
     });
@@ -246,11 +246,11 @@ export class SecurityService {
   verifyPasswordResetToken(token: string): { valid: boolean; userId?: string } {
     try {
       const decoded = jwt.verify(token, this.config.jwtSecret) as any;
-      
+
       if (decoded.type !== 'password_reset') {
         return { valid: false };
       }
-      
+
       return { valid: true, userId: decoded.userId };
     } catch (error) {
       return { valid: false };
@@ -268,7 +268,7 @@ export class SecurityService {
 
   sanitizeObject(obj: Record<string, any>): Record<string, any> {
     const sanitized: Record<string, any> = {};
-    
+
     for (const [key, value] of Object.entries(obj)) {
       if (typeof value === 'string') {
         sanitized[key] = this.sanitizeInput(value);
@@ -278,7 +278,7 @@ export class SecurityService {
         sanitized[key] = value;
       }
     }
-    
+
     return sanitized;
   }
 
@@ -292,7 +292,7 @@ export class SecurityService {
       /exec(\s|\+)+(s|x)p\w+/gi, // Stored procedure injection
       /(\s|%20)or(\s|%20)/gi // OR keyword with spaces
     ];
-    
+
     return patterns.some(pattern => pattern.test(input));
   }
 
@@ -313,7 +313,7 @@ export class SecurityService {
       /<img[^>]*>/gi,
       /<style[^>]*>([\s\S]*?)<\/style>/gi
     ];
-    
+
     return patterns.some(pattern => pattern.test(input));
   }
 
@@ -331,12 +331,12 @@ export class SecurityService {
 
   private getPasswordCharsetSize(password: string): number {
     let charset = 0;
-    
+
     if (/[a-z]/.test(password)) charset += 26;
     if (/[A-Z]/.test(password)) charset += 26;
     if (/\d/.test(password)) charset += 10;
     if (/[^a-zA-Z0-9]/.test(password)) charset += 32;
-    
+
     return charset || 1; // Avoid division by zero
   }
 
@@ -358,7 +358,7 @@ export class SecurityService {
     const ip = req.ip || 'unknown';
     const userAgent = req.headers['user-agent'] || 'unknown';
     const userId = req.user?.id || 'anonymous';
-    
+
     return `${ip}:${userId}:${userAgent}`;
   }
 }
@@ -377,7 +377,7 @@ export function getSecurityService(): SecurityService {
 export function securityHeaders() {
   const securityService = getSecurityService();
   const headers = securityService.getSecurityHeaders();
-  
+
   return (req: any, res: any, next: any) => {
     for (const [key, value] of Object.entries(headers)) {
       res.setHeader(key, value);
@@ -388,52 +388,52 @@ export function securityHeaders() {
 
 export function inputSanitization() {
   const securityService = getSecurityService();
-  
+
   return (req: any, res: any, next: any) => {
     if (req.body) {
       req.body = securityService.sanitizeObject(req.body);
     }
-    
+
     if (req.query) {
       req.query = securityService.sanitizeObject(req.query);
     }
-    
+
     if (req.params) {
       req.params = securityService.sanitizeObject(req.params);
     }
-    
+
     next();
   };
 }
 
 export function sqlInjectionProtection() {
   const securityService = getSecurityService();
-  
+
   return (req: any, res: any, next: any) => {
     const checkInput = (input: any): boolean => {
       if (typeof input === 'string') {
         return securityService.detectSqlInjection(input);
       }
-      
+
       if (typeof input === 'object' && input !== null) {
         return Object.values(input).some(checkInput);
       }
-      
+
       return false;
     };
-    
-    const hasInjection = 
-      checkInput(req.body) || 
-      checkInput(req.query) || 
+
+    const hasInjection =
+      checkInput(req.body) ||
+      checkInput(req.query) ||
       checkInput(req.params);
-    
+
     if (hasInjection) {
       return res.status(400).json({
         success: false,
         message: 'Invalid input detected'
       });
     }
-    
+
     next();
   };
 }
