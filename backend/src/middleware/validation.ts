@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import Joi from 'joi';
-import { getSecurityService } from '../services/security';
+import * as Joi from 'joi';
+import { getSecurityService } from '../utils/security';
 import logger from '../utils/logger';
 
 export interface ValidationRule {

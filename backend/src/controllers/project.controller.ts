@@ -7,25 +7,35 @@ import { emitToProject } from '../services/socket';
 export const createProject = async (req: Request, res: Response) => {
   try {
     const { name, description, goal } = req.body;
-    const userId = req.user.id;
+    const userId = (req as any).user.id;
 
     const project = new Project({
-      name,
+      title: name, // Map name to title as per schema
       description,
       goal,
-      createdBy: userId,
-      team: [userId],
-      progress: {
-        currentStep: 0,
-        totalSteps: 5, // Example: Define your project steps
-        percentage: 0,
+      user: userId, // Map createdBy to user as per schema
+      agents: [],
+      files: [],
+      settings: {
+        streaming: true,
+        autoSave: true,
+        confidenceThreshold: 0.7,
+        maxIterations: 10
       },
+      analytics: {
+        confidenceScore: 0,
+        executionTime: 0,
+        tokensUsed: 0,
+        iterations: 0
+      }
     });
 
-    await project.save();
+    await (project as any).save();
 
     // Emit project created event
-    emitToProject(req.io, project.id, 'project:created', project);
+    if ((req as any).io) {
+      emitToProject((req as any).io, project.id, 'project:created', project);
+    }
 
     res.status(201).json({
       success: true,
@@ -40,14 +50,10 @@ export const createProject = async (req: Request, res: Response) => {
 export const getProjects = async (req: Request, res: Response) => {
   try {
     const { status, search, sort = '-createdAt' } = req.query;
-    const userId = req.user.id;
+    const userId = (req as any).user.id;
 
     const query: any = {
-      $or: [
-        { createdBy: userId },
-        { team: userId },
-        { 'settings.visibility': 'public' },
-      ],
+      user: userId // Filter by user
     };
 
     if (status) {
@@ -60,8 +66,7 @@ export const getProjects = async (req: Request, res: Response) => {
 
     const projects = await Project.find(query)
       .sort(sort as string)
-      .populate('createdBy', 'name email')
-      .populate('team', 'name email');
+      .populate('user', 'name email');
 
     res.json({
       success: true,
@@ -77,19 +82,15 @@ export const getProjects = async (req: Request, res: Response) => {
 export const getProject = async (req: Request, res: Response) => {
   try {
     const project = await Project.findById(req.params.id)
-      .populate('createdBy', 'name email')
-      .populate('team', 'name email');
+      .populate('user', 'name email');
 
     if (!project) {
       throw new NotFoundError('Project not found');
     }
 
     // Check if user has access to the project
-    if (
-      project.settings.visibility !== 'public' &&
-      !project.team.includes(req.user.id) &&
-      !project.createdBy.equals(req.user.id)
-    ) {
+    // Assuming simple ownership for now
+    if (project.user.toString() !== (req as any).user.id) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to access this project',
@@ -124,7 +125,7 @@ export const updateProject = async (req: Request, res: Response) => {
     }
 
     // Check if user has permission to update the project
-    if (!project.team.includes(req.user.id) && !project.createdBy.equals(req.user.id)) {
+    if (project.user.toString() !== (req as any).user.id) {
       return res.status(403).json({
         success: false,
         message: 'You do not have permission to update this project',
@@ -138,11 +139,13 @@ export const updateProject = async (req: Request, res: Response) => {
       }
     });
 
-    project.metadata.updatedAt = new Date();
-    await project.save();
+    project.updatedAt = new Date();
+    await (project as any).save();
 
     // Emit project updated event
-    emitToProject(req.io, project.id, 'project:updated', project);
+    if ((req as any).io) {
+      emitToProject((req as any).io, project.id, 'project:updated', project);
+    }
 
     res.json({
       success: true,
@@ -169,17 +172,19 @@ export const deleteProject = async (req: Request, res: Response) => {
     }
 
     // Check if user is the creator of the project
-    if (!project.createdBy.equals(req.user.id)) {
+    if (project.user.toString() !== (req as any).user.id) {
       return res.status(403).json({
         success: false,
         message: 'Only the project creator can delete this project',
       });
     }
 
-    await project.remove();
+    await Project.deleteOne({ _id: project._id });
 
     // Emit project deleted event
-    emitToProject(req.io, project.id, 'project:deleted', { id: project.id });
+    if ((req as any).io) {
+      emitToProject((req as any).io, project.id, 'project:deleted', { id: project.id });
+    }
 
     res.json({
       success: true,
