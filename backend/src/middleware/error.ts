@@ -79,3 +79,9 @@ export const errorHandler = (
     message: 'Something went wrong!',
   });
 };
+
+
+export const notFound = (req: Request, res: Response, next: NextFunction) => {
+  const error = new AppError(`Can't find ${req.originalUrl} on this server!`, 404);
+  next(error);
+};

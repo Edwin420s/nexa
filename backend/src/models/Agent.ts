@@ -3,7 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IAgent extends Document {
   name: string;
   type: 'research' | 'code' | 'summary' | 'visual';
-  model: string;
+  aiModel: string; // Renamed from model to avoid conflict
   description: string;
   capabilities: string[];
   config: {
@@ -31,6 +31,23 @@ const AgentSchema = new Schema<IAgent>({
   name: {
     type: String,
     required: true,
+    unique: true
+  },
+  type: {
+    type: String,
+    required: true,
+    enum: ['research', 'code', 'summary', 'visual']
+  },
+  aiModel: { // Renamed from model
+    type: String,
+    required: true,
+    enum: ['gemini-3-pro', 'gemini-2.5-flash', 'gemini-2.5-pro', 'nano-banana', 'veo-3.1']
+  },
+  description: {
+    type: String,
+    required: true
+  },
+  capabilities: [{
     type: String
   }],
   config: {

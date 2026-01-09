@@ -5,39 +5,55 @@ export interface IUser extends Document {
   email: string;
   password: string;
   name: string;
-  unique: true,
-  lowercase: true,
-  trim: true
-},
-password: {
-  type: String,
-    required: true,
-      minlength: 6
-},
-name: {
-  type: String,
-    required: true,
-      trim: true
-},
-avatar: {
-  type: String,
-    default: ''
-},
-projects: [{
-  type: Schema.Types.ObjectId,
-  ref: 'Project'
-}],
+  avatar?: string;
+  projects: mongoose.Types.ObjectId[];
   settings: {
-  emailNotifications: {
-    type: Boolean,
-      default: true
-  },
-  defaultModel: {
+    emailNotifications: boolean;
+    defaultModel: string;
+  };
+  createdAt: Date;
+  updatedAt: Date;
+  id: string; // Add id property
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+const UserSchema = new Schema<IUser>({
+  email: {
     type: String,
+    required: true,
+    unique: true,
+    lowercase: true,
+    trim: true
+  },
+  password: {
+    type: String,
+    required: true,
+    minlength: 6
+  },
+  name: {
+    type: String,
+    required: true,
+    trim: true
+  },
+  avatar: {
+    type: String,
+    default: ''
+  },
+  projects: [{
+    type: Schema.Types.ObjectId,
+    ref: 'Project'
+  }],
+  settings: {
+    emailNotifications: {
+      type: Boolean,
+      default: true
+    },
+    defaultModel: {
+      type: String,
       default: 'gemini-2.5-flash',
       enum: ['gemini-3-pro', 'gemini-2.5-flash', 'gemini-2.5-pro']
+    }
   }
-}
 }, {
   timestamps: true
 });

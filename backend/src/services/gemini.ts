@@ -1,12 +1,6 @@
-import { GoogleGenAI } from '@google/genai';
-
-export interface GeminiConfig {
-  apiKey: string;
-  model?: string;
-  temperature?: number;
-  maxTokens?: number;
-  topP?: number;
-  topK?: number;
+maxTokens ?: number;
+topP ?: number;
+topK ?: number;
 }
 
 export interface GeminiResponse {
@@ -29,7 +23,7 @@ export class GeminiService {
       topK: 40,
       ...config
     };
-    
+
     this.ai = new GoogleGenAI({
       apiKey: this.config.apiKey
     });
@@ -37,7 +31,7 @@ export class GeminiService {
 
   async generateContent(prompt: string, options?: Partial<GeminiConfig>): Promise<GeminiResponse> {
     const config = { ...this.config, ...options };
-    
+
     try {
       const response = await this.ai.models.generateContent({
         model: config.model!,
@@ -76,9 +70,9 @@ export class GeminiService {
     options?: Partial<GeminiConfig>
   ): Promise<T> {
     const structuredPrompt = `${prompt}\n\nRespond with a valid JSON object matching this schema: ${JSON.stringify(schema)}`;
-    
+
     const response = await this.generateContent(structuredPrompt, options);
-    
+
     try {
       return JSON.parse(response.content) as T;
     } catch (error) {
@@ -134,13 +128,13 @@ export class GeminiService {
       structure: content.includes('\n') && content.includes('. ') ? 0.8 : 0.3,
       keywords: this.hasKeywords(content) ? 0.9 : 0.5
     };
-    
+
     const confidence = (
       factors.length * 0.3 +
       factors.structure * 0.4 +
       factors.keywords * 0.3
     );
-    
+
     return Math.min(Math.max(confidence, 0.1), 0.99);
   }
 

@@ -53,7 +53,7 @@ export class NotificationService extends EventEmitter {
 
   constructor(config?: Partial<NotificationConfig>) {
     super();
-    
+
     this.config = {
       email: {
         enabled: process.env.EMAIL_ENABLED === 'true',
@@ -199,7 +199,7 @@ The Nexa Team`,
     if (this.config.email.enabled) {
       try {
         this.emailTransporter = nodemailer.createTransport(this.config.email.transport);
-        
+
         // Verify connection
         this.emailTransporter.verify((error) => {
           if (error) {
@@ -239,11 +239,11 @@ The Nexa Team`,
 
     // Get user preferences
     const userChannels = this.getUserNotificationChannels(user);
-    
+
     // Determine which channels to use
-    const channels = options?.channels || 
-                     (options?.type ? [options.type] : userChannels);
-    
+    const channels = options?.channels ||
+      (options?.type ? [options.type] : userChannels);
+
     // Prepare notification data
     const notificationData: Partial<Notification> = {
       userId,
@@ -275,7 +275,7 @@ The Nexa Team`,
       }
 
       notifications.push(notification);
-      
+
       // Emit event
       this.emit('notification:sent', notification);
     }
@@ -285,15 +285,15 @@ The Nexa Team`,
 
   private getUserNotificationChannels(user: any): Notification['type'][] {
     const channels: Notification['type'][] = ['in_app'];
-    
+
     if (user.settings?.emailNotifications && this.config.email.enabled) {
       channels.push('email');
     }
-    
+
     if (this.config.webhook.enabled && user.settings?.webhookUrl) {
       channels.push('webhook');
     }
-    
+
     return channels;
   }
 
@@ -350,7 +350,7 @@ The Nexa Team`,
     }
 
     const webhookUrl = user.settings?.webhookUrl || this.config.webhook.url;
-    
+
     const response = await fetch(webhookUrl!, {
       method: 'POST',
       headers: {
@@ -384,12 +384,12 @@ The Nexa Team`,
 
   private renderTemplate(template: string, variables: Record<string, any>): string {
     let rendered = template;
-    
+
     for (const [key, value] of Object.entries(variables)) {
       const placeholder = `{{${key}}}`;
       rendered = rendered.replace(new RegExp(placeholder, 'g'), value);
     }
-    
+
     return rendered;
   }
 
@@ -404,57 +404,14 @@ The Nexa Team`,
   private generateWebhookSignature(notification: Notification): string {
     const secret = process.env.WEBHOOK_SECRET || 'your-webhook-secret';
     const data = JSON.stringify(notification);
-    
+
     // Use HMAC for signature
     const crypto = require('crypto');
     return crypto
       .createHmac('sha256', secret)
       .update(data)
-      .digest('hex');
-  }
-
-  // Convenience methods for common notifications
-  async notifyProjectStarted(projectId: string): Promise<void> {
-    const project = await Project.findById(projectId).populate('user');
-    if (!project) return;
-
-    const user = project.user;
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    
-    await this.sendNotification(user._id, 'project_started', {
-      userName: user.name,
-      projectName: project.title,
-      projectGoal: project.goal.substring(0, 100) + '...',
-      agentCount: project.agents.length,
-      estimatedTime: '5-10 minutes',
-      projectUrl: `${frontendUrl}/project/${project._id}`
-    });
-  }
 
-  async notifyProjectCompleted(projectId: string): Promise<void> {
-    const project = await Project.findById(projectId).populate('user');
-    if (!project) return;
-
-    const user = project.user;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    
-    await this.sendNotification(user._id, 'project_completed', {
-      userName: user.name,
-      projectName: project.title,
-      confidenceScore: (project.analytics.confidenceScore * 100).toFixed(1),
-      executionTime: this.formatExecutionTime(project.analytics.executionTime),
-      fileCount: project.files?.length || 0,
-      projectUrl: `${frontendUrl}/project/${project._id}`
-    });
-  }
-
-  async notifyProjectFailed(projectId: string, error: Error): Promise<void> {
-    const project = await Project.findById(projectId).populate('user');
-    if (!project) return;
-
-    const user = project.user;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    
     await this.sendNotification(user._id, 'project_failed', {
       userName: user.name,
       projectName: project.title,
@@ -487,7 +444,7 @@ The Nexa Team`,
   ): Promise<void> {
     // Send to admins
     const admins = await User.find({ role: 'admin' });
-    
+
     for (const admin of admins) {
       await this.sendNotification(admin._id, 'system_alert', {
         alertType,
@@ -578,10 +535,10 @@ The Nexa Team`,
   async cleanupOldNotifications(retentionDays?: number): Promise<number> {
     const days = retentionDays || this.config.inApp.retentionDays;
     const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    
+
     // In a real implementation, delete old notifications from database
     const deletedCount = 0; // Would be actual count from DB
-    
+
     logger.info(`Cleaned up ${deletedCount} old notifications`);
     return deletedCount;
   }
@@ -604,7 +561,7 @@ export async function notifyProjectStatus(
   error?: Error
 ): Promise<void> {
   const notificationService = getNotificationService();
-  
+
   switch (status) {
     case 'started':
       await notificationService.notifyProjectStarted(projectId);
