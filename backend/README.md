@@ -1,299 +1,159 @@
-# Nexa Backend
+# Nexa - Autonomous Research & Build Agent Platform
 
-Autonomous Research & Build Agent Platform - Backend Server
+**Built for Gemini 3 Hackathon**
 
-## Overview
+Nexa is an autonomous multi-agent system that transforms high-level goals into fully researched architectures, working code, and actionable insights using Google's Gemini 3 AI models.
 
-Nexa is a production-ready backend for an AI-powered autonomous agent platform that uses Google Gemini models to research, analyze, and generate code based on user-defined goals.
+## 🎯 What Nexa Does
 
-## Features
+Transform vague ideas into production-ready solutions through autonomous AI agents that:
+- **Plan** complex projects into executable tasks
+- **Research** using Gemini's 1M token context and Google Search
+- **Synthesize** findings into coherent strategies
+- **Build** working code and architecture
+- **Evaluate** outputs with confidence scoring and self-reflection
 
-- 🤖 **Multi-Agent Orchestration** - Coordinates researcher, code builder, and summarizer agents
-- 🔐 **JWT Authentication** - Secure user authentication and authorization
-- 📊 **Real-Time Streaming** - SSE and WebSocket support for live updates
-- 💾 **MongoDB Integration** - Scalable NoSQL database for projects and analytics
-- ⚡ **Redis Caching** - Fast caching and session management
-- 📈 **Analytics Dashboard** - Track project performance and agent metrics
-- 🎯 **Confidence Scoring** - AI self-reflection and confidence tracking
-- 🔄 **Background Jobs** - Bull queue for async agent execution
+## 🧠 Gemini 3 Integration
 
-## Tech Stack
+Nexa leverages the full Gemini ecosystem:
 
-- **Runtime**: Node.js 18+
-- **Language**: TypeScript
-- **Framework**: Express.js
-- **Database**: MongoDB
-- **Cache**: Redis
-- **Queue**: Bull
-- **AI**: Google Gemini API
-- **Auth**: JWT
+- **Gemini 3 Pro**: Core reasoning engine for complex decision-making and multi-step planning
+- **Gemini 2.5 Flash**: Fast code generation and research synthesis
+- **Thinking Capabilities**: Maintains reasoning continuity across long-running tasks
+- **Function Calling**: Structured agent-to-tool communication
+- **Structured Outputs**: Deterministic JSON responses for reliable automation
+- **Long Context (1M tokens)**: Full project state awareness without memory loss
+- **Google Search Integration**: Real-time information gathering
 
-## Prerequisites
+### Agent Architecture
 
-- Node.js >= 18.0.0
-- MongoDB >= 6.0
-- Redis >= 6.0
-- Gemini API Key
+```
+User Goal → Orchestrator → [Planner → Researcher → Synthesizer → Builder → Evaluator]
+                                ↓
+                          Confidence Scoring
+                                ↓
+                          Self-Reflection
+                                ↓
+                          Streaming Output
+```
 
-## Installation
+## 🚀 Quick Start
 
 ```bash
 # Install dependencies
 npm install
 
-# Copy environment variables
+# Set up environment
 cp .env.example .env
+# Add your GEMINI_API_KEY
 
-# Edit .env with your configuration
-nano .env
+# Run development server
+npm run dev
+
+# Run tests
+npm test
 ```
 
-## Environment Variables
+## 📡 API Endpoints
+
+### Core Endpoints
+- `POST /api/v1/auth/register` - User registration
+- `POST /api/v1/auth/login` - Authentication
+- `POST /api/v1/projects` - Create autonomous project
+- `GET /api/v1/projects/:id` - Get project details
+- `POST /api/v1/projects/:id/run` - Execute agents
+- `GET /api/v1/stream/projects/:id` - Real-time SSE streaming
+- `GET /api/v1/analytics/user` - Usage analytics
+
+## 🏗️ Architecture
+
+### Multi-Phase Execution
+1. **Planning** - Goal decomposition with Gemini 3 Pro
+2. **Research** - Information gathering via Search + Gemini
+3. **Synthesis** - Decision making and architecture design  
+4. **Build** - Code generation with verification
+5. **Evaluation** - Confidence scoring and validation
+
+### Technology Stack
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: MongoDB (projects, analytics, users)
+- **AI**: Gemini 3 Pro, Gemini 2.5 Flash
+- **Real-time**: Server-Sent Events (SSE)
+- **Queue**: Bull + Redis for background jobs
+- **Auth**: JWT with bcrypt
+
+## 📊 Key Features
+
+✅ **Autonomous Execution** - No human intervention after goal submission  
+✅ **Confidence Scoring** - AI self-evaluation on every output  
+✅ **Real-Time Streaming** - Live progress updates via SSE  
+✅ **Long-Running Tasks** - Handles multi-hour autonomous workflows  
+✅ **Self-Correction** - Agents learn from failures and retry  
+✅ **Transparent Reasoning** - Full decision chain visibility  
+
+## 🔧 Environment Variables
 
 ```env
-# Server
 PORT=5000
-NODE_ENV=development
-
-# Database
+NODE_ENV=production
 MONGODB_URI=mongodb://localhost:27017/nexa
-
-# Redis
 REDIS_HOST=localhost
 REDIS_PORT=6379
-
-# Gemini API
-GEMINI_API_KEY=your_gemini_api_key_here
-
-# JWT
-JWT_SECRET=your_super_secret_jwt_key
+GEMINI_API_KEY=your_gemini_api_key
+JWT_SECRET=your_jwt_secret
 JWT_EXPIRE=7d
 ```
 
-## Running the Server
+## 🧪 Testing
 
 ```bash
-# Development mode with auto-reload
-npm run dev
+# Run all tests
+npm test
 
+# Quick health check
+npm run test:quick
+
+# Load testing
+npm run test:load
+```
+
+## 📦 Deployment
+
+```bash
 # Build for production
 npm run build
 
 # Start production server
 npm start
 
-# Run queue worker (separate process)
+# Start background worker
 npm run worker
 ```
 
-## API Documentation
+## 🎥 Demo
 
-### Authentication
+Watch Nexa autonomously:
+1. Accept a high-level goal
+2. Research best practices via Gemini + Search
+3. Generate system architecture
+4. Build working code
+5. Self-evaluate with confidence scores
 
-#### Register
-```http
-POST /api/v1/auth/register
-Content-Type: application/json
+All without human intervention.
 
-{
-  "email": "user@example.com",
-  "password": "password123",
-  "name": "John Doe"
-}
-```
+## 🏆 Hackathon Highlights
 
-#### Login
-```http
-POST /api/v1/auth/login
-Content-Type: application/json
+This project showcases:
+- **Marathon Agent** capabilities with multi-hour autonomous execution
+- **Advanced reasoning** using Gemini 3's thinking features
+- **Tool orchestration** via function calling
+- **Production-grade** architecture (not a demo wrapper)
+- **Explainable AI** through confidence scoring and reflection
 
-{
-  "email": "user@example.com",
-  "password": "password123"
-}
-```
+## 📄 License
 
-#### Get Current User
-```http
-GET /api/v1/auth/me
-Authorization: Bearer <token>
-```
-
-### Projects
-
-#### Create Project
-```http
-POST /api/v1/projects
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-  "title": "Build a REST API",
-  "description": "Create a scalable backend",
-  "goal": "Build a Node.js REST API with authentication",
-  "agents": [
-    { "name": "researcher", "model": "gemini-2.5-flash" },
-    { "name": "code-builder", "model": "gemini-2.5-pro" }
-  ]
-}
-```
-
-#### Get All Projects
-```http
-GET /api/v1/projects?status=completed&limit=20&skip=0
-Authorization: Bearer <token>
-```
-
-#### Get Project By ID
-```http
-GET /api/v1/projects/:id
-Authorization: Bearer <token>
-```
-
-#### Run Project
-```http
-POST /api/v1/projects/:id/run
-Authorization: Bearer <token>
-```
-
-#### Stream Project Updates (SSE)
-```http
-GET /api/v1/stream/projects/:id
-Authorization: Bearer <token>
-Accept: text/event-stream
-```
-
-### Analytics
-
-#### User Analytics
-```http
-GET /api/v1/analytics/user
-Authorization: Bearer <token>
-```
-
-#### Project Analytics
-```http
-GET /api/v1/analytics/project/:id
-Authorization: Bearer <token>
-```
-
-## Project Structure
-
-```
-backend/
-├── src/
-│   ├── agent-orchestrator/     # Agent coordination logic
-│   │   ├── index.ts            # Main orchestrator
-│   │   └── agents/             # Individual agents
-│   │       ├── researcher.ts
-│   │       ├── codeBuilder.ts
-│   │       └── summarizer.ts
-│   ├── models/                 # MongoDB models
-│   │   ├── User.ts
-│   │   ├── Project.ts
-│   │   └── Analytics.ts
-│   ├── routes/                 # API routes
-│   │   ├── auth.ts
-│   │   ├── projects.ts
-│   │   ├── analytics.ts
-│   │   ├── sse.ts
-│   │   └── health.ts
-│   ├── services/               # Business logic
-│   │   ├── mongodb.ts
-│   │   ├── redis.ts
-│   │   ├── gemini.ts
-│   │   ├── streaming.ts
-│   │   ├── confidence.ts
-│   │   └── queue.ts
-│   ├── middleware/             # Express middleware
-│   │   ├── auth.ts
-│   │   ├── errorHandler.ts
-│   │   └── validate.ts
-│   ├── utils/                  # Utilities
-│   │   ├── logger.ts
-│   │   ├── errors.ts
-│   │   ├── helpers.ts
-│   │   └── validation.ts
-│   ├── workers/                # Background workers
-│   │   └── agentWorker.ts
-│   └── server.ts               # Main server file
-├── package.json
-├── tsconfig.json
-└── .env.example
-```
-
-## Agent Flow
-
-1. **Planning Phase** - Decompose goal into tasks
-2. **Research Phase** - Gather information using Gemini
-3. **Synthesis Phase** - Summarize research findings
-4. **Build Phase** - Generate code and architecture
-5. **Evaluation Phase** - Calculate confidence and metrics
-
-## Deployment
-
-### Using PM2
-
-```bash
-# Install PM2
-npm install -g pm2
-
-# Start server
-pm2 start npm --name "nexa-api" -- start
-
-# Start worker
-pm2 start npm --name "nexa-worker" -- run worker
-
-# View logs
-pm2 logs nexa-api
-```
-
-### Using Docker
-
-```bash
-# Build image
-docker build -t nexa-backend .
-
-# Run container
-docker run -d -p 5000:5000 --env-file .env nexa-backend
-```
-
-## Monitoring
-
-Health check endpoint:
-```http
-GET /health
-```
-
-Response:
-```json
-{
-  "status": "healthy",
-  "timestamp": "2026-01-12T14:00:00.000Z",
-  "uptime": 3600,
-  "services": {
-    "mongodb": "connected",
-    "redis": "connected"
-  }
-}
-```
-
-## Contributing
-
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit changes (`git commit -m 'Add amazing feature'`)
-4. Push to branch (`git push origin feature/amazing-feature`)
-5. Open Pull Request
-
-## License
-
-MIT License - see LICENSE file for details
-
-## Support
-
-For issues and questions, please open a GitHub issue.
+MIT
 
 ---
 
-Built with ❤️ for the Gemini 3 Hackathon
+**Built with ❤️ for Gemini 3 Hackathon 2026**

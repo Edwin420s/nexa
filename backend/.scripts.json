@@ -1,6 +1,0 @@
-{
-    "scripts": {
-        "dev": "ts-node-dev --respawn src/server.ts",
-        "worker": "ts-node-dev --respawn src/workers/agentWorker.ts"
-    }
-}

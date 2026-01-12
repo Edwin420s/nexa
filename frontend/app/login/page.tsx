@@ -17,7 +17,7 @@ export default function LoginPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500))
     router.push('/dashboard')
@@ -30,13 +30,20 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950 p-4">
-      <Suspense fallback={
-        <div className="w-full max-w-md p-8 space-y-8 bg-gray-900 rounded-xl border border-gray-800">
-          <div className="flex justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-          </div>
+      <div className="max-w-md w-full space-y-8">
+        {/* Logo & Header */}
+        <div className="text-center">
+          <Link href="/" className="inline-block">
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+              Nexa
+            </h1>
+          </Link>
+          <h2 className="mt-6 text-3xl font-bold">Sign in to your account</h2>
           <p className="mt-2 text-gray-400">
-            Sign in to your account to continue
+            Or{' '}
+            <Link href="/register" className="text-blue-400 hover:text-blue-300 font-medium">
+              create a new account
+            </Link>
           </p>
         </div>
 
