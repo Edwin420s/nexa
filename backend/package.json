@@ -9,7 +9,10 @@
     "worker": "ts-node-dev --respawn --transpile-only src/workers/agentWorker.ts",
     "build": "tsc",
     "start": "node dist/server.js",
-    "test": "jest",
+    "test": "npx ts-node src/tests/backend.test.ts",
+    "test:quick": "./quick-test.sh",
+    "test:full": "./test.sh",
+    "test:load": "node load-test.js",
     "lint": "eslint . --ext .ts",
     "format": "prettier --write \"src/**/*.ts\""
   },
@@ -40,7 +43,8 @@
     "ioredis": "^5.3.2",
     "joi": "^17.11.0",
     "multer": "^1.4.5-lts.1",
-    "socket.io": "^4.6.0"
+    "socket.io": "^4.6.0",
+    "axios": "^1.6.5"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
