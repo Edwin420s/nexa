@@ -1,143 +1,79 @@
-export interface ConfidenceMetrics {
-  contentLength: number;
-  coherenceScore: number;
-  specificityScore: number;
+import logger from '../utils/logger';
+
+export interface ConfidenceFactors {
+  responseLength: number;
   structureScore: number;
-  relevanceScore: number;
+  contentQuality: number;
+  specificityScore: number;
 }
 
-export class ConfidenceService {
-  static calculateConfidence(content: string, context?: string): number {
-    const metrics = this.analyzeContent(content, context);
-    
-    // Weighted average of all metrics
-    const weights = {
-      contentLength: 0.15,
-      coherenceScore: 0.25,
-      specificityScore: 0.20,
-      structureScore: 0.15,
-      relevanceScore: 0.25
-    };
-    
-    const confidence = (
-      metrics.contentLength * weights.contentLength +
-      metrics.coherenceScore * weights.coherenceScore +
-      metrics.specificityScore * weights.specificityScore +
-      metrics.structureScore * weights.structureScore +
-      metrics.relevanceScore * weights.relevanceScore
-    );
-    
-    // Normalize to 0-1 range
-    return Math.min(Math.max(confidence, 0), 0.99);
-  }
-  
-  static analyzeContent(content: string, context?: string): ConfidenceMetrics {
-    const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
-    const words = content.split(/\s+/).filter(w => w.length > 0);
-    
-    return {
-      contentLength: this.calculateLengthScore(words.length),
-      coherenceScore: this.calculateCoherenceScore(sentences),
-      specificityScore: this.calculateSpecificityScore(words),
-      structureScore: this.calculateStructureScore(content),
-      relevanceScore: context ? this.calculateRelevanceScore(content, context) : 0.7
-    };
-  }
-  
-  private static calculateLengthScore(wordCount: number): number {
-    if (wordCount < 10) return 0.2;
-    if (wordCount < 50) return 0.5;
-    if (wordCount < 200) return 0.8;
-    if (wordCount < 500) return 0.9;
-    return 1.0;
-  }
-  
-  private static calculateCoherenceScore(sentences: string[]): number {
-    if (sentences.length < 2) return 0.3;
-    
-    // Check for transitional words
-    const transitionWords = [
-      'however', 'therefore', 'moreover', 'consequently',
-      'furthermore', 'nevertheless', 'additionally'
-    ];
-    
-    const hasTransitions = sentences.some(sentence =>
-      transitionWords.some(word => sentence.toLowerCase().includes(word))
-    );
-    
-    // Check for logical flow
-    const hasLogicalFlow = sentences.length > 1;
-    
-    return hasTransitions && hasLogicalFlow ? 0.9 : 0.6;
-  }
-  
-  private static calculateSpecificityScore(words: string[]): number {
-    // Count specific vs generic words
-    const specificIndicators = [
-      'specifically', 'exactly', 'precisely', 'specification',
-      'parameter', 'configuration', 'implementation'
-    ];
-    
-    const specificCount = words.filter(word =>
-      specificIndicators.some(indicator => word.toLowerCase().includes(indicator))
-    ).length;
-    
-    const score = Math.min(specificCount / 5, 1);
-    return score > 0 ? score : 0.3;
-  }
-  
-  private static calculateStructureScore(content: string): number {
-    const hasParagraphs = content.includes('\n\n');
-    const hasBulletPoints = content.includes('•') || content.includes('- ') || content.includes('* ');
-    const hasHeadings = content.includes('# ') || /^[A-Z][^.!?]*:/.test(content);
-    
-    let score = 0.5;
-    if (hasParagraphs) score += 0.2;
-    if (hasBulletPoints) score += 0.15;
-    if (hasHeadings) score += 0.15;
-    
-    return Math.min(score, 1);
-  }
-  
-  private static calculateRelevanceScore(content: string, context: string): number {
-    const contentWords = new Set(content.toLowerCase().split(/\W+/));
-    const contextWords = new Set(context.toLowerCase().split(/\W+/));
-    
-    const intersection = new Set(
-      [...contentWords].filter(word => contextWords.has(word))
-    );
-    
-    const relevance = intersection.size / Math.max(contentWords.size, 1);
-    return Math.min(relevance * 1.5, 1); // Boost score slightly
-  }
-  
-  static generateSelfReflection(content: string, confidence: number): string {
-    const metrics = this.analyzeContent(content);
-    
-    const reflections = [];
-    
-    if (confidence > 0.8) {
-      reflections.push('High confidence due to comprehensive analysis');
-    } else if (confidence > 0.6) {
-      reflections.push('Moderate confidence with room for improvement');
-    } else {
-      reflections.push('Low confidence - consider additional research');
+export const calculateConfidence = (
+  response: string,
+  context?: Record<string, any>
+): number => {
+  try {
+    // Try to extract confidence from JSON response
+    const jsonMatch = response.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      if (parsed.confidence && typeof parsed.confidence === 'number') {
+        return Math.max(0, Math.min(1, parsed.confidence));
+      }
     }
-    
-    if (metrics.contentLength < 0.3) {
-      reflections.push('Content is quite brief');
-    } else if (metrics.contentLength > 0.8) {
-      reflections.push('Content is detailed and thorough');
-    }
-    
-    if (metrics.coherenceScore > 0.8) {
-      reflections.push('Excellent logical flow between ideas');
-    }
-    
-    if (metrics.specificityScore > 0.7) {
-      reflections.push('Specific details enhance credibility');
-    }
-    
-    return reflections.join('. ');
+
+    // Calculate heuristic confidence
+    const factors = analyzeResponse(response);
+    return computeConfidenceScore(factors);
+  } catch (error) {
+    logger.warn('Error calculating confidence, using default:', error);
+    return 0.7;
   }
-}
+};
+
+const analyzeResponse = (response: string): ConfidenceFactors => {
+  const length = response.length;
+  const hasStructure = /```|#{1,6}|\n-|\n\*|\n\d+\./.test(response);
+  const hasSpecifics = /\d+|[A-Z][a-z]+\s+[A-Z][a-z]+|https?:\/\//.test(response);
+
+  return {
+    responseLength: Math.min(length / 1000, 1),
+    structureScore: hasStructure ? 0.8 : 0.4,
+    contentQuality: length > 100 ? 0.8 : 0.5,
+    specificityScore: hasSpecifics ? 0.9 : 0.5
+  };
+};
+
+const computeConfidenceScore = (factors: ConfidenceFactors): number => {
+  const weights = {
+    responseLength: 0.2,
+    structureScore: 0.3,
+    contentQuality: 0.3,
+    specificityScore: 0.2
+  };
+
+  const score =
+    factors.responseLength * weights.responseLength +
+    factors.structureScore * weights.structureScore +
+    factors.contentQuality * weights.contentQuality +
+    factors.specificityScore * weights.specificityScore;
+
+  return Math.max(0.3, Math.min(0.95, score));
+};
+
+export const aggregateConfidenceScores = (scores: number[]): number => {
+  if (scores.length === 0) return 0;
+  return scores.reduce((sum, score) => sum + score, 0) / scores.length;
+};
+
+export const generateSelfReflection = (
+  confidence: number,
+  taskType: string
+): string => {
+  if (confidence >= 0.8) {
+    return `High confidence in ${taskType} results. Response is well-structured and specific.`;
+  } else if (confidence >= 0.6) {
+    return `Moderate confidence in ${taskType}. Results are reasonable but may need validation.`;
+  } else {
+    return `Lower confidence in ${taskType}. Recommend additional research or iteration.`;
+  }
+};

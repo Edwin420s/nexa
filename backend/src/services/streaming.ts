@@ -1,194 +1,68 @@
-import { Server } from 'socket.io';
-import { Project } from '../models/Project';
-import { Analytics } from '../models/Analytics';
+import { Server as SocketIOServer } from 'socket.io';
+import { Response } from 'express';
 import logger from '../utils/logger';
 
-export interface StreamEvent {
-  type: 'agent_update' | 'confidence_update' | 'file_generated' | 'project_status';
-  projectId: string;
-  data: any;
-  timestamp: string;
-}
+let io: SocketIOServer;
 
-export class StreamingService {
-  private io: Server;
-  private connections: Map<string, Set<string>> = new Map(); // projectId -> socketIds
+export const setupStreaming = (socketServer: SocketIOServer) => {
+  io = socketServer;
 
-  constructor(io: Server) {
-    this.io = io;
-    this.setupSocketHandlers();
-  }
+  io.on('connection', (socket) => {
+    logger.info(`Client connected: ${socket.id}`);
 
-  private setupSocketHandlers(): void {
-    this.io.on('connection', (socket) => {
-      logger.info(`Socket connected: ${socket.id}`);
-
-      socket.on('subscribe', (projectId: string) => {
-        this.subscribeToProject(socket.id, projectId);
-        socket.join(`project:${projectId}`);
-        logger.info(`Socket ${socket.id} subscribed to project ${projectId}`);
-      });
-
-      socket.on('unsubscribe', (projectId: string) => {
-        this.unsubscribeFromProject(socket.id, projectId);
-        socket.leave(`project:${projectId}`);
-        logger.info(`Socket ${socket.id} unsubscribed from project ${projectId}`);
-      });
-
-      socket.on('disconnect', () => {
-        this.removeSocket(socket.id);
-        logger.info(`Socket disconnected: ${socket.id}`);
-      });
-    });
-  }
-
-  private subscribeToProject(socketId: string, projectId: string): void {
-    if (!this.connections.has(projectId)) {
-      this.connections.set(projectId, new Set());
-    }
-    this.connections.get(projectId)!.add(socketId);
-  }
-
-  private unsubscribeFromProject(socketId: string, projectId: string): void {
-    if (this.connections.has(projectId)) {
-      this.connections.get(projectId)!.delete(socketId);
-      if (this.connections.get(projectId)!.size === 0) {
-        this.connections.delete(projectId);
-      }
-    }
-  }
-
-  private removeSocket(socketId: string): void {
-    for (const [projectId, socketIds] of this.connections.entries()) {
-      if (socketIds.has(socketId)) {
-        socketIds.delete(socketId);
-        if (socketIds.size === 0) {
-          this.connections.delete(projectId);
-        }
-      }
-    }
-  }
-
-  async streamAgentUpdate(projectId: string, agentName: string, output: any): Promise<void> {
-    const event: StreamEvent = {
-      type: 'agent_update',
-      projectId,
-      data: {
-        agent: agentName,
-        output,
-        timestamp: new Date().toISOString()
-      },
-      timestamp: new Date().toISOString()
-    };
-
-    // Emit to all sockets subscribed to this project
-    this.io.to(`project:${projectId}`).emit('agent_update', event);
-
-    // Log analytics
-    await Analytics.create({
-      project: projectId,
-      agent: agentName,
-      action: 'agent_execution',
-      metrics: {
-        confidence: output.confidence || 0.5,
-        executionTime: output.executionTime || 0,
-        tokensUsed: output.tokensUsed || 0
-      },
-      metadata: {
-        contentLength: output.content?.length || 0,
-        agentType: agentName
-      }
+    socket.on('join-project', (projectId: string) => {
+      socket.join(`project:${projectId}`);
+      logger.info(`Client ${socket.id} joined project: ${projectId}`);
     });
 
-    logger.info(`Streamed agent update for project ${projectId}, agent ${agentName}`);
-  }
-
-  async streamConfidenceUpdate(projectId: string, confidence: number): Promise<void> {
-    const event: StreamEvent = {
-      type: 'confidence_update',
-      projectId,
-      data: {
-        confidence,
-        timestamp: new Date().toISOString()
-      },
-      timestamp: new Date().toISOString()
-    };
-
-    this.io.to(`project:${projectId}`).emit('confidence_update', event);
-
-    // Update project confidence
-    await Project.findByIdAndUpdate(projectId, {
-      $set: { 'analytics.confidenceScore': confidence }
+    socket.on('leave-project', (projectId: string) => {
+      socket.leave(`project:${projectId}`);
+      logger.info(`Client ${socket.id} left project: ${projectId}`);
     });
 
-    logger.info(`Streamed confidence update for project ${projectId}: ${confidence}`);
-  }
-
-  async streamFileGenerated(projectId: string, file: any): Promise<void> {
-    const event: StreamEvent = {
-      type: 'file_generated',
-      projectId,
-      data: {
-        file,
-        timestamp: new Date().toISOString()
-      },
-      timestamp: new Date().toISOString()
-    };
-
-    this.io.to(`project:${projectId}`).emit('file_generated', event);
-
-    // Add file to project
-    await Project.findByIdAndUpdate(projectId, {
-      $push: { files: file }
+    socket.on('disconnect', () => {
+      logger.info(`Client disconnected: ${socket.id}`);
     });
+  });
+};
 
-    logger.info(`Streamed file generated for project ${projectId}: ${file.name}`);
+export const emitToProject = (projectId: string, event: string, data: any) => {
+  if (io) {
+    io.to(`project:${projectId}`).emit(event, data);
+    logger.debug(`Emitted ${event} to project ${projectId}`);
   }
+};
 
-  async streamProjectStatus(projectId: string, status: string, message?: string): Promise<void> {
-    const event: StreamEvent = {
-      type: 'project_status',
-      projectId,
-      data: {
-        status,
-        message,
-        timestamp: new Date().toISOString()
-      },
-      timestamp: new Date().toISOString()
-    };
+export const emitAgentUpdate = (
+  projectId: string,
+  agentName: string,
+  content: string,
+  confidence: number
+) => {
+  emitToProject(projectId, 'agent-update', {
+    agent: agentName,
+    content,
+    confidence,
+    timestamp: new Date()
+  });
+};
 
-    this.io.to(`project:${projectId}`).emit('project_status', event);
+export const emitProjectStatus = (projectId: string, status: string) => {
+  emitToProject(projectId, 'project-status', { status, timestamp: new Date() });
+};
 
-    // Update project status
-    const updateData: any = { status };
-    if (status === 'running') {
-      updateData.startedAt = new Date();
-    } else if (status === 'completed' || status === 'failed') {
-      updateData.completedAt = new Date();
-    }
+// SSE helpers
+export const initSSE = (res: Response) => {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
 
-    await Project.findByIdAndUpdate(projectId, { $set: updateData });
+  return (data: any) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+};
 
-    logger.info(`Streamed project status for ${projectId}: ${status}`);
-  }
-
-  getConnectedClients(projectId: string): number {
-    return this.connections.get(projectId)?.size || 0;
-  }
-}
-
-let streamingService: StreamingService;
-
-export function setupStreaming(io: Server): StreamingService {
-  if (!streamingService) {
-    streamingService = new StreamingService(io);
-  }
-  return streamingService;
-}
-
-export function getStreamingService(): StreamingService {
-  if (!streamingService) {
-    throw new Error('Streaming service not initialized');
-  }
-  return streamingService;
-}
+export const closeSSE = (res: Response) => {
+  res.end();
+};
