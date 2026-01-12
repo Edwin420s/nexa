@@ -1,64 +1,60 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User';
+import { AuthenticationError } from '../utils/errors';
 
 export interface AuthRequest extends Request {
   user?: any;
+  userId?: string;
 }
 
 export const authenticate = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-): Promise<void> => {
+) => {
   try {
     const token = req.headers.authorization?.replace('Bearer ', '');
-    
+
     if (!token) {
-      res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
-      return;
+      throw new AuthenticationError('No token provided');
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { id: string };
-    const user = await User.findById(decoded.id).select('-password');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+    const user = await User.findById(decoded.userId);
 
-    if (!user) {
-      res.status(401).json({
-        success: false,
-        message: 'User not found'
-      });
-      return;
+    if (!user || !user.isActive) {
+      throw new AuthenticationError('Invalid token or user inactive');
     }
 
     req.user = user;
+    req.userId = user._id.toString();
     next();
   } catch (error) {
-    res.status(401).json({
-      success: false,
-      message: 'Invalid token'
-    });
+    next(new AuthenticationError('Authentication failed'));
   }
 };
 
-export const authorize = (...roles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        message: 'Authentication required'
-      });
-    }
+export const optionalAuth = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const token = req.headers.authorization?.replace('Bearer ', '');
 
-    if (!roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Insufficient permissions'
-      });
+    if (token) {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!) as { userId: string };
+      const user = await User.findById(decoded.userId);
+
+      if (user && user.isActive) {
+        req.user = user;
+        req.userId = user._id.toString();
+      }
     }
 
     next();
-  };
+  } catch (error) {
+    next();
+  }
 };

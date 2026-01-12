@@ -1,46 +1,69 @@
-import express from 'express';
+import { Router, Response, NextFunction } from 'express';
 import { Project } from '../models/Project';
-import { getAgentOrchestrator } from '../agent-orchestrator/orchestrator';
-import { authenticate } from '../middleware/auth';
+import { User } from '../models/User';
+import { authenticate, AuthRequest } from '../middleware/auth';
+import { validateRequest } from '../middleware/validate';
+import { createProjectSchema, updateProjectSchema } from '../utils/validation';
+import { NotFoundError, AuthorizationError } from '../utils/errors';
+import { addAgentJob } from '../services/queue';
 import logger from '../utils/logger';
 
-const router = express.Router();
+const router = Router();
+
+// All routes require authentication
+router.use(authenticate);
 
 // Get all projects for user
-router.get('/', authenticate, async (req: any, res, next) => {
+router.get('/', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const projects = await Project.find({ user: req.user.id })
+    const { status, limit = 20, skip = 0 } = req.query;
+
+    const query: any = { user: req.userId };
+    if (status) {
+      query.status = status;
+    }
+
+    const projects = await Project.find(query)
       .sort({ createdAt: -1 })
+      .limit(Number(limit))
+      .skip(Number(skip))
       .select('-agents.outputs');
-    
+
+    const total = await Project.countDocuments(query);
+
     res.json({
       success: true,
-      data: projects,
-      count: projects.length
+      data: {
+        projects,
+        pagination: {
+          total,
+          limit: Number(limit),
+          skip: Number(skip),
+          hasMore: total > Number(skip) + Number(limit)
+        }
+      }
     });
   } catch (error) {
     next(error);
   }
 });
 
-// Get single project
-router.get('/:id', authenticate, async (req: any, res, next) => {
+// Get project by ID
+router.get('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const project = await Project.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    });
+    const project = await Project.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+      throw new NotFoundError('Project');
+    }
+
+    if (project.user.toString() !== req.userId) {
+      throw new AuthorizationError('Not authorized to access this project');
     }
 
     res.json({
       success: true,
-      data: project
+      data: { project }
     });
   } catch (error) {
     next(error);
@@ -48,41 +71,42 @@ router.get('/:id', authenticate, async (req: any, res, next) => {
 });
 
 // Create new project
-router.post('/', authenticate, async (req: any, res, next) => {
+router.post('/', validateRequest(createProjectSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
     const { title, description, goal, agents, settings } = req.body;
 
-    if (!title || !goal) {
-      return res.status(400).json({
-        success: false,
-        message: 'Title and goal are required'
-      });
-    }
-
     const project = await Project.create({
-      user: req.user.id,
+      user: req.userId,
       title,
-      description: description || '',
+      description,
       goal,
-      agents: agents || [
-        { name: 'researcher', model: 'gemini-3-pro' },
-        { name: 'code-builder', model: 'gemini-2.5-pro' },
-        { name: 'summarizer', model: 'gemini-2.5-flash' }
-      ],
-      settings: {
-        streaming: true,
-        autoSave: true,
-        confidenceThreshold: 0.7,
-        maxIterations: 10,
-        ...settings
+      agents: agents.map((a: any) => ({
+        name: a.name,
+        model: a.model || 'gemini-2.5-flash',
+        status: 'idle',
+        outputs: []
+      })),
+      settings: settings || {},
+      state: {
+        currentPhase: 'planning',
+        currentIteration: 0,
+        decisions: {},
+        taskQueue: []
       }
     });
 
-    logger.info(`Project created: ${project._id} by user ${req.user.id}`);
+    // Update user's project count
+    await User.findByIdAndUpdate(req.userId, {
+      $push: { projects: project._id },
+      $inc: { 'usage.projectsCreated': 1 }
+    });
+
+    logger.info(`Project created: ${project._id} by user ${req.userId}`);
 
     res.status(201).json({
       success: true,
-      data: project
+      message: 'Project created successfully',
+      data: { project }
     });
   } catch (error) {
     next(error);
@@ -90,94 +114,70 @@ router.post('/', authenticate, async (req: any, res, next) => {
 });
 
 // Update project
-router.put('/:id', authenticate, async (req: any, res, next) => {
+router.put('/:id', validateRequest(updateProjectSchema), async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const updates = req.body;
-    delete updates._id;
-    delete updates.user;
-    delete updates.createdAt;
-
-    const project = await Project.findOneAndUpdate(
-      { _id: req.params.id, user: req.user.id },
-      { $set: updates },
-      { new: true, runValidators: true }
-    );
+    const project = await Project.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+      throw new NotFoundError('Project');
     }
+
+    if (project.user.toString() !== req.userId) {
+      throw new AuthorizationError('Not authorized to update this project');
+    }
+
+    Object.assign(project, req.body);
+    await project.save();
 
     res.json({
       success: true,
-      data: project
+      message: 'Project updated successfully',
+      data: { project }
     });
   } catch (error) {
     next(error);
   }
 });
 
-// Delete project
-router.delete('/:id', authenticate, async (req: any, res, next) => {
+// Start project execution
+router.post('/:id/run', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const project = await Project.findOneAndDelete({
-      _id: req.params.id,
-      user: req.user.id
-    });
+    const project = await Project.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+      throw new NotFoundError('Project');
     }
 
-    logger.info(`Project deleted: ${req.params.id} by user ${req.user.id}`);
-
-    res.json({
-      success: true,
-      message: 'Project deleted successfully'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Execute project
-router.post('/:id/run', authenticate, async (req: any, res, next) => {
-  try {
-    const project = await Project.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    });
-
-    if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+    if (project.user.toString() !== req.userId) {
+      throw new AuthorizationError('Not authorized to run this project');
     }
 
-    // Check if project is already running
-    const orchestrator = getAgentOrchestrator();
-    if (orchestrator.isProjectActive(project._id.toString())) {
+    if (project.status === 'running') {
       return res.status(400).json({
         success: false,
         message: 'Project is already running'
       });
     }
 
-    // Start execution in background
-    orchestrator.executeProject(project._id.toString()).catch(error => {
-      logger.error(`Background execution error for project ${project._id}:`, error);
+    // Update status
+    project.status = 'running';
+    project.startedAt = new Date();
+    await project.save();
+
+    // Add to queue
+    await addAgentJob({
+      projectId: project._id.toString(),
+      agentName: 'orchestrator',
+      goal: project.goal,
+      config: project.settings
     });
+
+    logger.info(`Project execution started: ${project._id}`);
 
     res.json({
       success: true,
       message: 'Project execution started',
-      projectId: project._id
+      data: { project }
     });
   } catch (error) {
     next(error);
@@ -185,114 +185,56 @@ router.post('/:id/run', authenticate, async (req: any, res, next) => {
 });
 
 // Pause project
-router.post('/:id/pause', authenticate, async (req: any, res, next) => {
+router.post('/:id/pause', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const orchestrator = getAgentOrchestrator();
-    
-    if (!orchestrator.isProjectActive(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Project is not running'
-      });
-    }
-
-    await orchestrator.pauseProject(req.params.id);
-
-    res.json({
-      success: true,
-      message: 'Project paused'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Resume project
-router.post('/:id/resume', authenticate, async (req: any, res, next) => {
-  try {
-    const orchestrator = getAgentOrchestrator();
-    
-    if (orchestrator.isProjectActive(req.params.id)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Project is already running'
-      });
-    }
-
-    await orchestrator.resumeProject(req.params.id);
-
-    res.json({
-      success: true,
-      message: 'Project resumed'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Cancel project execution
-router.post('/:id/cancel', authenticate, async (req: any, res, next) => {
-  try {
-    const orchestrator = getAgentOrchestrator();
-    await orchestrator.cancelProject(req.params.id);
-
-    res.json({
-      success: true,
-      message: 'Project execution cancelled'
-    });
-  } catch (error) {
-    next(error);
-  }
-});
-
-// Get project files
-router.get('/:id/files', authenticate, async (req: any, res, next) => {
-  try {
-    const project = await Project.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    }).select('files');
+    const project = await Project.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+      throw new NotFoundError('Project');
     }
+
+    if (project.user.toString() !== req.userId) {
+      throw new AuthorizationError();
+    }
+
+    project.status = 'paused';
+    await project.save();
 
     res.json({
       success: true,
-      data: project.files
+      message: 'Project paused',
+      data: { project }
     });
   } catch (error) {
     next(error);
   }
 });
 
-// Get project status
-router.get('/:id/status', authenticate, async (req: any, res, next) => {
+// Delete project
+router.delete('/:id', async (req: AuthRequest, res: Response, next: NextFunction) => {
   try {
-    const project = await Project.findOne({
-      _id: req.params.id,
-      user: req.user.id
-    }).select('status agents.status analytics');
+    const project = await Project.findById(req.params.id);
 
     if (!project) {
-      return res.status(404).json({
-        success: false,
-        message: 'Project not found'
-      });
+      throw new NotFoundError('Project');
     }
 
-    const orchestrator = getAgentOrchestrator();
-    const isActive = orchestrator.isProjectActive(req.params.id);
+    if (project.user.toString() !== req.userId) {
+      throw new AuthorizationError();
+    }
+
+    await project.deleteOne();
+
+    // Remove from user's projects
+    await User.findByIdAndUpdate(req.userId, {
+      $pull: { projects: project._id }
+    });
+
+    logger.info(`Project deleted: ${project._id}`);
 
     res.json({
       success: true,
-      data: {
-        ...project.toObject(),
-        isActive
-      }
+      message: 'Project deleted successfully'
     });
   } catch (error) {
     next(error);

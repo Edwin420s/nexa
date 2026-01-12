@@ -1,199 +1,252 @@
-export * from './orchestrator';
-export * from './agents/researcher';
-export * from './agents/code-builder';
-export * from './agents/summarizer';
-export * from './agents/visual-generator';
-
-import { AgentOrchestrator, getAgentOrchestrator } from './orchestrator';
-import { researchAgent } from './agents/researcher';
-import { codeBuilderAgent } from './agents/code-builder';
+import { Project } from '../models/Project';
+import { researcherAgent } from './agents/researcher';
+import { codeBuilderAgent } from './agents/codeBuilder';
 import { summarizerAgent } from './agents/summarizer';
-import { visualGeneratorAgent } from './agents/visual-generator';
+import { emitAgentUpdate, emitProjectStatus } from '../services/streaming';
+import { calculateConfidence, generateSelfReflection } from '../services/confidence';
+import logger from '../utils/logger';
 
-export class AgentManager {
-  private orchestrator: AgentOrchestrator;
-  
-  constructor() {
-    this.orchestrator = getAgentOrchestrator();
+export interface OrchestratorConfig {
+  maxIterations?: number;
+  confidenceThreshold?: number;
+  streamingEnabled?: boolean;
+}
+
+export class AgentOrchestrator {
+  private projectId: string;
+  private config: OrchestratorConfig;
+
+  constructor(projectId: string, config?: OrchestratorConfig) {
+    this.projectId = projectId;
+    this.config = {
+      maxIterations: config?.maxIterations || 10,
+      confidenceThreshold: config?.confidenceThreshold || 0.7,
+      streamingEnabled: config?.streamingEnabled !== false
+    };
   }
 
-  async executeAgent(agentName: string, input: any): Promise<any> {
-    switch (agentName.toLowerCase()) {
-      case 'research':
-      case 'researcher':
-        return await researchAgent.research(
-          input.topic || input.requirements,
-          input.depth
-        );
-      
-      case 'code':
-      case 'code-builder':
-      case 'coder':
-        if (input.fileName && input.language) {
-          return await codeBuilderAgent.generateSingleFile(
-            input.requirements,
-            input.language,
-            input.fileName
-          );
-        }
-        return await codeBuilderAgent.generateProject(
-          input.requirements,
-          input.stack || 'nodejs'
-        );
-      
-      case 'summarize':
-      case 'summarizer':
-        return await summarizerAgent.summarize(
-          input.content,
-          input.options
-        );
-      
-      case 'visual':
-      case 'visual-generator':
-      case 'designer':
-        return await visualGeneratorAgent.generateVisuals(
-          input.requirements,
-          input.assetTypes
-        );
-      
-      default:
-        throw new Error(`Unknown agent: ${agentName}`);
+  async execute(): Promise<void> {
+    try {
+      const project = await Project.findById(this.projectId);
+      if (!project) throw new Error('Project not found');
+
+      logger.info(`Starting orchestration for project: ${this.projectId}`);
+
+      await this.updateProjectStatus('running');
+
+      // Execution phases
+      await this.planningPhase(project);
+      await this.researchPhase(project);
+      await this.synthesisPhase(project);
+      await this.buildPhase(project);
+      await this.evaluationPhase(project);
+
+      await this.updateProjectStatus('completed');
+      logger.info(`Orchestration completed for project: ${this.projectId}`);
+
+    } catch (error: any) {
+      logger.error(`Orchestration error for project ${this.projectId}:`, error);
+      await this.updateProjectStatus('failed');
+      throw error;
     }
   }
 
-  async executeOrchestratedProject(projectId: string): Promise<void> {
-    return await this.orchestrator.executeProject(projectId);
+  private async planningPhase(project: any): Promise<void> {
+    logger.info(`Planning phase for project: ${this.projectId}`);
+
+    project.state.currentPhase = 'planning';
+    await project.save();
+
+    this.emit('phase-update', { phase: 'planning', message: 'Breaking down project goal' });
+
+    // Plan is implicit in the project goal and agents
+    const tasks = project.agents.map((agent: any) => ({
+      taskId: `task-${agent.name}`,
+      description: `Execute ${agent.name} agent`,
+      agent: agent.name,
+      priority: 'high' as const,
+      status: 'pending' as const
+    }));
+
+    project.state.taskQueue = tasks;
+    await project.save();
   }
 
-  async batchExecuteAgents(tasks: Array<{ agent: string; input: any }>): Promise<any[]> {
-    const results = await Promise.all(
-      tasks.map(task => this.executeAgent(task.agent, task.input))
+  private async researchPhase(project: any): Promise<void> {
+    logger.info(`Research phase for project: ${this.projectId}`);
+
+    project.state.currentPhase = 'research';
+    await project.save();
+
+    const researcherAgentConfig = project.agents.find((a: any) => a.name === 'researcher');
+    if (!researcherAgentConfig) return;
+
+    this.emit('phase-update', { phase: 'research', message: 'Researching and gathering information' });
+
+    const result = await researcherAgent.execute(project.goal, {
+      model: researcherAgentConfig.model
+    });
+
+    const confidence = calculateConfidence(result.output);
+    const selfReflection = generateSelfReflection(confidence, 'research');
+
+    await this.saveAgentOutput('researcher', result.output, confidence, selfReflection);
+
+    project.state.decisions.research = result.output;
+    await project.save();
+  }
+
+  private async synthesisPhase(project: any): Promise<void> {
+    logger.info(`Synthesis phase for project: ${this.projectId}`);
+
+    project.state.currentPhase = 'synthesis';
+    await project.save();
+
+    this.emit('phase-update', { phase: 'synthesis', message: 'Synthesizing research findings' });
+
+    const researchFindings = project.state.decisions.research || '';
+
+    const summarizerAgentConfig = project.agents.find((a: any) => a.name === 'summarizer');
+    if (summarizerAgentConfig && researchFindings) {
+      const result = await summarizerAgent.execute(researchFindings, {
+        model: summarizerAgentConfig.model
+      });
+
+      const confidence = calculateConfidence(result.output);
+      await this.saveAgentOutput('summarizer', result.output, confidence);
+
+      project.state.decisions.synthesis = result.output;
+      await project.save();
+    }
+  }
+
+  private async buildPhase(project: any): Promise<void> {
+    logger.info(`Build phase for project: ${this.projectId}`);
+
+    project.state.currentPhase = 'build';
+    await project.save();
+
+    const codeBuilderAgentConfig = project.agents.find((a: any) => a.name === 'code-builder');
+    if (!codeBuilderAgentConfig) return;
+
+    this.emit('phase-update', { phase: 'build', message: 'Generating code and architecture' });
+
+    const context = {
+      goal: project.goal,
+      research: project.state.decisions.research || '',
+      synthesis: project.state.decisions.synthesis || ''
+    };
+
+    const result = await codeBuilderAgent.execute(context, {
+      model: codeBuilderAgentConfig.model
+    });
+
+    const confidence = calculateConfidence(result.output);
+    const selfReflection = generateSelfReflection(confidence, 'code generation');
+
+    await this.saveAgentOutput('code-builder', result.output, confidence, selfReflection);
+
+    project.state.decisions.build = result.output;
+    project.analytics.successfulTasks += 1;
+    await project.save();
+  }
+
+  private async evaluationPhase(project: any): Promise<void> {
+    logger.info(`Evaluation phase for project: ${this.projectId}`);
+
+    project.state.currentPhase = 'evaluation';
+    await project.save();
+
+    this.emit('phase-update', { phase: 'evaluation', message: 'Evaluating results' });
+
+    // Calculate overall confidence
+    const allAgents = project.agents;
+    let totalConfidence = 0;
+    let count = 0;
+
+    allAgents.forEach((agent: any) => {
+      agent.outputs.forEach((output: any) => {
+        totalConfidence += output.confidence;
+        count++;
+      });
+    });
+
+    if (count > 0) {
+      project.analytics.averageConfidence = totalConfidence / count;
+    }
+
+    await project.save();
+  }
+
+  private async saveAgentOutput(
+    agentName: string,
+    content: string,
+    confidence: number,
+    selfReflection?: string
+  ): Promise<void> {
+    const project = await Project.findById(this.projectId);
+    if (!project) return;
+
+    const agent = project.agents.find((a: any) => a.name === agentName);
+    if (!agent) return;
+
+    agent.outputs.push({
+      timestamp: new Date(),
+      agent: agentName,
+      content,
+      confidence,
+      selfReflection,
+      metadata: {}
+    });
+
+    agent.status = 'running';
+    await project.save();
+
+    this.emit('agent-update', {
+      agent: agentName,
+      content,
+      confidence,
+      selfReflection
+    });
+  }
+
+  private async updateProjectStatus(status: string): Promise<void> {
+    const project = await Project.findById(this.projectId);
+    if (!project) return;
+
+    project.status = status as any;
+
+    if (status === 'running' && !project.startedAt) {
+      project.startedAt = new Date();
+    }
+
+    if ((status === 'completed' || status === 'failed') && !project.completedAt) {
+      project.completedAt = new Date();
+
+      if (project.startedAt) {
+        project.analytics.totalExecutionTime =
+          project.completedAt.getTime() - project.startedAt.getTime();
+      }
+    }
+
+    await project.save();
+
+    this.emit('project-status', { status });
+  }
+
+  private emit(event: string, data: any): void {
+    if (!this.config.streamingEnabled) return;
+
+    emitAgentUpdate(
+      this.projectId,
+      event,
+      JSON.stringify(data),
+      0.5
     );
-    return results;
-  }
-
-  getAgentCapabilities(agentName?: string): any {
-    const allCapabilities = {
-      research: {
-        description: 'Research and analyze topics',
-        inputs: ['topic', 'depth', 'focusAreas'],
-        outputs: ['analysis', 'keyFindings', 'sources', 'recommendations'],
-        models: ['gemini-3-pro', 'gemini-2.5-pro']
-      },
-      'code-builder': {
-        description: 'Generate code and projects',
-        inputs: ['requirements', 'stack', 'language', 'fileName'],
-        outputs: ['files', 'dependencies', 'setupInstructions'],
-        models: ['gemini-2.5-pro', 'gemini-2.5-flash']
-      },
-      summarizer: {
-        description: 'Create summaries and reports',
-        inputs: ['content', 'options'],
-        outputs: ['summary', 'keyPoints', 'takeaways', 'recommendations'],
-        models: ['gemini-2.5-flash', 'gemini-2.5-pro']
-      },
-      'visual-generator': {
-        description: 'Generate visual assets',
-        inputs: ['requirements', 'assetTypes'],
-        outputs: ['assets', 'overallDescription'],
-        models: ['gemini-3-pro', 'nano-banana']
-      }
-    };
-
-    if (agentName) {
-      return allCapabilities[agentName as keyof typeof allCapabilities] || null;
-    }
-
-    return allCapabilities;
-  }
-
-  async validateAgentInput(agentName: string, input: any): Promise<{ isValid: boolean; errors: string[] }> {
-    const errors: string[] = [];
-    
-    switch (agentName.toLowerCase()) {
-      case 'research':
-      case 'researcher':
-        if (!input.topic && !input.requirements) {
-          errors.push('Topic or requirements are required');
-        }
-        break;
-      
-      case 'code':
-      case 'code-builder':
-        if (!input.requirements) {
-          errors.push('Requirements are required');
-        }
-        break;
-      
-      case 'summarize':
-      case 'summarizer':
-        if (!input.content) {
-          errors.push('Content to summarize is required');
-        }
-        break;
-      
-      case 'visual':
-      case 'visual-generator':
-        if (!input.requirements) {
-          errors.push('Requirements are required');
-        }
-        break;
-      
-      default:
-        errors.push(`Unknown agent: ${agentName}`);
-    }
-
-    return {
-      isValid: errors.length === 0,
-      errors
-    };
-  }
-
-  async estimateExecution(agentName: string, input: any): Promise<{
-    estimatedTime: number; // in milliseconds
-    estimatedTokens: number;
-    complexity: 'low' | 'medium' | 'high';
-  }> {
-    const baseEstimates: Record<string, any> = {
-      research: {
-        baseTime: 5000,
-        baseTokens: 1000,
-        perCharMultiplier: 0.01
-      },
-      'code-builder': {
-        baseTime: 3000,
-        baseTokens: 500,
-        perCharMultiplier: 0.02
-      },
-      summarizer: {
-        baseTime: 2000,
-        baseTokens: 300,
-        perCharMultiplier: 0.005
-      },
-      'visual-generator': {
-        baseTime: 4000,
-        baseTokens: 800,
-        perCharMultiplier: 0.015
-      }
-    };
-
-    const estimate = baseEstimates[agentName] || baseEstimates.research;
-    const inputLength = JSON.stringify(input).length;
-    
-    const estimatedTime = estimate.baseTime + (inputLength * estimate.perCharMultiplier);
-    const estimatedTokens = estimate.baseTokens + Math.floor(inputLength / 4);
-    
-    let complexity: 'low' | 'medium' | 'high' = 'medium';
-    if (estimatedTime < 3000) complexity = 'low';
-    if (estimatedTime > 10000) complexity = 'high';
-
-    return {
-      estimatedTime,
-      estimatedTokens,
-      complexity
-    };
   }
 }
 
-export const agentManager = new AgentManager();
-export { getAgentOrchestrator } from './orchestrator';
+export const runOrchestrator = async (projectId: string, config?: OrchestratorConfig): Promise<void> => {
+  const orchestrator = new AgentOrchestrator(projectId, config);
+  await orchestrator.execute();
+};
