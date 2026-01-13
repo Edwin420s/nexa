@@ -66,3 +66,46 @@ export const initSSE = (res: Response) => {
 export const closeSSE = (res: Response) => {
   res.end();
 };
+
+// StreamingService class for coordinated streaming operations
+export class StreamingService {
+  async streamProjectStatus(projectId: string, status: string, message?: string) {
+    emitToProject(projectId, 'project-status', {
+      status,
+      message,
+      timestamp: new Date()
+    });
+  }
+
+  async streamAgentUpdate(projectId: string, agentName: string, data: any) {
+    emitToProject(projectId, 'agent-update', {
+      agent: agentName,
+      ...data,
+      timestamp: new Date()
+    });
+  }
+
+  async streamConfidenceUpdate(projectId: string, confidence: number) {
+    emitToProject(projectId, 'confidence-update', {
+      confidence,
+      timestamp: new Date()
+    });
+  }
+
+  async streamFileGenerated(projectId: string, file: any) {
+    emitToProject(projectId, 'file-generated', {
+      file,
+      timestamp: new Date()
+    });
+  }
+}
+
+// Singleton instance
+let streamingServiceInstance: StreamingService;
+
+export function getStreamingService(): StreamingService {
+  if (!streamingServiceInstance) {
+    streamingServiceInstance = new StreamingService();
+  }
+  return streamingServiceInstance;
+}

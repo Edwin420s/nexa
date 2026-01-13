@@ -218,6 +218,7 @@ Break down complex problems. Show your thought process.`;
   });
 };
 
+
 export default {
   generateContent,
   generateContentStream,
@@ -226,3 +227,71 @@ export default {
   MODEL_CONFIG,
   AGENT_TOOLS
 };
+
+// GeminiService class for coordinated AI operations
+export class GeminiService {
+  async generateContent(prompt: string, config?: {
+    model?: string;
+    temperature?: number;
+  }) {
+    return generateContent(prompt, config);
+  }
+
+  async generateContentStream(prompt: string, config?: {
+    model?: string;
+    temperature?: number;
+  }) {
+    return generateContentStream(prompt, config);
+  }
+
+  async generateWithThinking(prompt: string, config?: {
+    model?: string;
+  }) {
+    return generateWithThinking(prompt, config);
+  }
+
+  async generateWithTools(prompt: string, tools: any[], config?: {
+    model?: string;
+    temperature?: number;
+  }) {
+    const model = getModel(config?.model || MODEL_CONFIG.FAST);
+
+    const result = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      tools,
+      generationConfig: {
+        temperature: config?.temperature ?? 0.7,
+      }
+    });
+
+    const response = result.response;
+    return {
+      content: response.text(),
+      confidence: 0.85, // Default confidence, can be enhanced
+      tokensUsed: response.usageMetadata?.totalTokenCount || 0,
+      functionCalls: response.functionCalls?.() || []
+    };
+  }
+
+  async checkHealth() {
+    try {
+      const model = getModel(MODEL_CONFIG.FAST);
+      await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: 'ping' }] }]
+      });
+      return { status: 'healthy', timestamp: new Date() };
+    } catch (error) {
+      return { status: 'unhealthy', error: (error as Error).message, timestamp: new Date() };
+    }
+  }
+}
+
+// Singleton instance
+let geminiServiceInstance: GeminiService;
+
+export function getGeminiService(): GeminiService {
+  if (!geminiServiceInstance) {
+    geminiServiceInstance = new GeminiService();
+  }
+  return geminiServiceInstance;
+}
