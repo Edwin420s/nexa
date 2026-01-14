@@ -26,14 +26,14 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (formData.password !== formData.confirmPassword) {
       alert('Passwords do not match')
       return
     }
 
     setIsLoading(true)
-    
+
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500))
     setIsLoading(false)
@@ -46,7 +46,7 @@ export default function RegisterPage() {
         {/* Logo & Header */}
         <div className="text-center">
           <Link href="/" className="inline-block">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold text-blue-400 text-glow-blue">
               Nexa
             </h1>
           </Link>
@@ -118,7 +118,7 @@ export default function RegisterPage() {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-              
+
               {/* Password Requirements */}
               <div className="mt-3 space-y-2">
                 {passwordRequirements.map((req, index) => (
@@ -179,7 +179,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading || formData.password !== formData.confirmPassword}
-              className="w-full py-3 px-4 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+              className="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 rounded-lg font-medium transition-all transform hover:scale-105 shadow-glow-blue hover:shadow-glow-blue-lg disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:shadow-none"
             >
               {isLoading ? (
                 <span className="flex items-center justify-center">
