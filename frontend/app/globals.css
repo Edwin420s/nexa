@@ -51,10 +51,12 @@
 
 @layer base {
   * {
-    @apply border-border;
+    border-color: hsl(217.2 32.6% 17.5%);
   }
+
   body {
-    @apply bg-background text-foreground;
+    background-color: hsl(222.2 84% 4.9%);
+    color: hsl(210 40% 98%);
   }
 }
 
@@ -84,19 +86,16 @@
   color: hsl(var(--primary-foreground));
 }
 
-/* Smooth transitions */
-* {
-  @apply transition-colors duration-200;
-}
-
 /* Loading animations */
 @keyframes shimmer {
   0% {
     opacity: 0.5;
   }
+
   50% {
     opacity: 1;
   }
+
   100% {
     opacity: 0.5;
   }
@@ -116,49 +115,52 @@
 /* Glow Effects */
 .glow-blue {
   box-shadow: 0 0 20px rgba(59, 130, 246, 0.3),
-              0 0 40px rgba(59, 130, 246, 0.1);
+    0 0 40px rgba(59, 130, 246, 0.1);
 }
 
 .glow-blue-strong {
   box-shadow: 0 0 30px rgba(59, 130, 246, 0.5),
-              0 0 60px rgba(59, 130, 246, 0.2);
+    0 0 60px rgba(59, 130, 246, 0.2);
 }
 
 .glow-purple {
   box-shadow: 0 0 20px rgba(168, 85, 247, 0.3),
-              0 0 40px rgba(168, 85, 247, 0.1);
+    0 0 40px rgba(168, 85, 247, 0.1);
 }
 
 .glow-green {
   box-shadow: 0 0 20px rgba(16, 185, 129, 0.3),
-              0 0 40px rgba(16, 185, 129, 0.1);
+    0 0 40px rgba(16, 185, 129, 0.1);
 }
 
 .glow-pink {
   box-shadow: 0 0 20px rgba(236, 72, 153, 0.3),
-              0 0 40px rgba(236, 72, 153, 0.1);
+    0 0 40px rgba(236, 72, 153, 0.1);
 }
 
 .text-glow-blue {
   text-shadow: 0 0 20px rgba(59, 130, 246, 0.5),
-               0 0 40px rgba(59, 130, 246, 0.2);
+    0 0 40px rgba(59, 130, 246, 0.2);
 }
 
 .text-glow-purple {
   text-shadow: 0 0 20px rgba(168, 85, 247, 0.5),
-               0 0 40px rgba(168, 85, 247, 0.2);
+    0 0 40px rgba(168, 85, 247, 0.2);
 }
 
 .border-glow {
-  @apply border-2 border-blue-500;
+  border: 2px solid rgb(59, 130, 246);
   animation: border-pulse 2s ease-in-out infinite;
 }
 
 @keyframes border-pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     border-color: rgb(59, 130, 246);
     box-shadow: 0 0 10px rgba(59, 130, 246, 0.3);
   }
+
   50% {
     border-color: rgb(96, 165, 250);
     box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
@@ -180,19 +182,19 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
-  
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
-  
+
   .text-balance {
     text-wrap: balance;
   }
-  
+
   .perspective-1000 {
     perspective: 1000px;
   }
-  
+
   .transform-style-3d {
     transform-style: preserve-3d;
   }
