@@ -223,7 +223,7 @@ export default function ErrorRecovery({ projectId, onAutoRecoveryToggle }: Error
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+          <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
             <Shield className="text-blue-400" size={24} />
           </div>
           <div>
@@ -246,7 +246,7 @@ export default function ErrorRecovery({ projectId, onAutoRecoveryToggle }: Error
           
           <button
             onClick={simulateNewError}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium"
+            className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium"
           >
             <Zap size={18} />
             <span>Test Recovery</span>
@@ -358,7 +358,7 @@ export default function ErrorRecovery({ projectId, onAutoRecoveryToggle }: Error
                     </div>
                     <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                        className="h-full bg-blue-500shadow-glow-blue transition-all duration-300"
                         style={{ width: `${recoveryProgress}%` }}
                       />
                     </div>
@@ -437,7 +437,7 @@ export default function ErrorRecovery({ projectId, onAutoRecoveryToggle }: Error
           </div>
           
           {/* Recovery Analytics */}
-          <div className="mt-6 p-4 bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-lg">
+          <div className="mt-6 p-4 bg-blue-900/10 border border-blue-800/30 rounded-lg">
             <h5 className="font-medium mb-3">Recovery Analytics</h5>
             <div className="space-y-3">
               <div>
@@ -456,7 +456,7 @@ export default function ErrorRecovery({ projectId, onAutoRecoveryToggle }: Error
                   <span className="font-medium">Network Errors (45s avg)</span>
                 </div>
                 <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div className="w-3/4 h-full bg-gradient-to-r from-green-500 to-emerald-500" />
+                  <div className="w-3/4 h-full bg-emerald-500 shadow-glow-green" />
                 </div>
               </div>
               
@@ -466,7 +466,7 @@ export default function ErrorRecovery({ projectId, onAutoRecoveryToggle }: Error
                   <span className="font-medium">68% errors prevented</span>
                 </div>
                 <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div className="w-2/3 h-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                  <div className="w-2/3 h-full bg-blue-500shadow-glow-blue" />
                 </div>
               </div>
             </div>

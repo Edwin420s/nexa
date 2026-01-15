@@ -24,7 +24,7 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <Link href="/" className="text-2xl font-bold text-blue-400 text-glow-blue">
               Nexa
             </Link>
             <div className="hidden md:block ml-10">
@@ -52,7 +52,7 @@ export default function Navbar() {
               <Link href="/login" className="text-gray-300 hover:text-white px-3 py-2 rounded-md text-sm font-medium">
                 Sign In
               </Link>
-              <Link href="/register" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-md text-sm font-medium">
+              <Link href="/register" className="bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg text-white px-4 py-2 rounded-md text-sm font-medium">
                 Get Started
               </Link>
             </div>
@@ -118,7 +118,7 @@ export default function Navbar() {
             </Link>
             <Link 
               href="/register" 
-              className="block px-3 py-2 rounded-md text-base font-medium text-white bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+              className="block px-3 py-2 rounded-md text-base font-medium text-white bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg"
               onClick={() => setIsOpen(false)}
             >
               <div className="flex items-center">

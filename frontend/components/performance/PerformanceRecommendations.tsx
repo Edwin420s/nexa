@@ -14,7 +14,7 @@ interface PerformanceRecommendationsProps {
 
 export function PerformanceRecommendations({ recommendations }: PerformanceRecommendationsProps) {
   return (
-    <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/30 rounded-xl p-6">
+    <div className="bg-blue-900/15 border-2 border-blue-800/20 border border-blue-800/30 rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-xl font-semibold">Performance Recommendations</h2>
@@ -68,7 +68,7 @@ export function PerformanceRecommendations({ recommendations }: PerformanceRecom
             <div className="font-medium">Next Recommended Action</div>
             <div className="text-sm text-gray-400">Implement agent scaling to handle increased load</div>
           </div>
-          <button className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg font-medium transition-colors">
+          <button className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-500 hover:border-emerald-400 shadow-glow-green rounded-lg font-medium transition-colors">
             Apply Optimization
           </button>
         </div>

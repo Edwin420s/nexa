@@ -150,7 +150,7 @@ export default function AnalyticsPage() {
                       <div className="flex items-center">
                         <div className="w-16 bg-gray-700 h-2 rounded-full overflow-hidden mr-3">
                           <div 
-                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500"
+                            className="h-full bg-blue-500shadow-glow-blue"
                             style={{ width: `${project.confidence}%` }}
                           />
                         </div>
@@ -194,7 +194,7 @@ export default function AnalyticsPage() {
 
         {/* Usage Insights */}
         <div className="grid md:grid-cols-3 gap-6 mt-8">
-          <div className="bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-xl p-6">
+          <div className="bg-blue-900/10 border border-blue-800/30 rounded-xl p-6">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center mr-3">
                 <TrendingUp className="text-blue-400" size={20} />
@@ -205,7 +205,7 @@ export default function AnalyticsPage() {
             <div className="text-sm text-blue-400">→ Optimize scheduling</div>
           </div>
           
-          <div className="bg-gradient-to-br from-purple-900/20 to-purple-900/5 border border-purple-800/30 rounded-xl p-6">
+          <div className="bg-purple-900/10 border border-purple-800/30 rounded-xl p-6">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center mr-3">
                 <BarChart3 className="text-purple-400" size={20} />
@@ -216,7 +216,7 @@ export default function AnalyticsPage() {
             <div className="text-sm text-purple-400">→ Leverage for complex tasks</div>
           </div>
           
-          <div className="bg-gradient-to-br from-green-900/20 to-green-900/5 border border-green-800/30 rounded-xl p-6">
+          <div className="bg-green-900/10 border border-green-800/30 rounded-xl p-6">
             <div className="flex items-center mb-4">
               <div className="w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center mr-3">
                 <Users className="text-green-400" size={20} />

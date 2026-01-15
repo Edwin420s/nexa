@@ -67,7 +67,7 @@ export default function NewProjectPage() {
           <div className="flex items-center justify-center mb-6">
             {[1, 2, 3, 4].map((stepNumber) => (
               <div key={stepNumber} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= stepNumber ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-gray-800'}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center ${step >= stepNumber ? 'bg-blue-600 border-2 border-blue-500 shadow-glow-blue' : 'bg-gray-800'}`}>
                   {step > stepNumber ? (
                     <Check size={16} className="text-white" />
                   ) : (
@@ -77,7 +77,7 @@ export default function NewProjectPage() {
                   )}
                 </div>
                 {stepNumber < 4 && (
-                  <div className={`w-12 h-1 ${step > stepNumber ? 'bg-gradient-to-r from-blue-600 to-purple-600' : 'bg-gray-800'}`} />
+                  <div className={`w-12 h-1 ${step > stepNumber ? 'bg-blue-600 border-2 border-blue-500 shadow-glow-blue' : 'bg-gray-800'}`} />
                 )}
               </div>
             ))}
@@ -119,7 +119,7 @@ export default function NewProjectPage() {
               <button
                 onClick={() => setStep(2)}
                 disabled={!projectData.title}
-                className={`px-6 py-3 rounded-lg font-medium ${projectData.title ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'bg-gray-800 cursor-not-allowed'}`}
+                className={`px-6 py-3 rounded-lg font-medium ${projectData.title ? 'bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg' : 'bg-gray-800 cursor-not-allowed'}`}
               >
                 Next: Define Goal
               </button>
@@ -159,7 +159,7 @@ Example: Build an autonomous research agent that can:
               <button
                 onClick={() => setStep(3)}
                 disabled={!projectData.goal}
-                className={`px-6 py-3 rounded-lg font-medium ${projectData.goal ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'bg-gray-800 cursor-not-allowed'}`}
+                className={`px-6 py-3 rounded-lg font-medium ${projectData.goal ? 'bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg' : 'bg-gray-800 cursor-not-allowed'}`}
               >
                 Next: Select Agents
               </button>
@@ -227,7 +227,7 @@ Example: Build an autonomous research agent that can:
               <button
                 onClick={() => setStep(4)}
                 disabled={projectData.selectedAgents.length === 0}
-                className={`px-6 py-3 rounded-lg font-medium ${projectData.selectedAgents.length > 0 ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700' : 'bg-gray-800 cursor-not-allowed'}`}
+                className={`px-6 py-3 rounded-lg font-medium ${projectData.selectedAgents.length > 0 ? 'bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg' : 'bg-gray-800 cursor-not-allowed'}`}
               >
                 Next: Review
               </button>
@@ -292,7 +292,7 @@ Example: Build an autonomous research agent that can:
               <button
                 onClick={handleCreateProject}
                 disabled={isCreating}
-                className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
+                className="px-6 py-3 bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-500 hover:border-emerald-400 shadow-glow-green rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
                 {isCreating ? (
                   <span className="flex items-center space-x-2">

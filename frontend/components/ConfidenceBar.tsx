@@ -10,7 +10,7 @@ export default function ConfidenceBar({
   size = 'md' 
 }: ConfidenceBarProps) {
   const getColor = (value: number) => {
-    if (value >= 0.8) return 'bg-gradient-to-r from-green-500 to-emerald-500'
+    if (value >= 0.8) return 'bg-emerald-500 shadow-glow-green'
     if (value >= 0.6) return 'bg-gradient-to-r from-yellow-500 to-amber-500'
     return 'bg-gradient-to-r from-red-500 to-orange-500'
   }

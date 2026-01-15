@@ -203,7 +203,7 @@ export default function MultiAgentCollaboration({ collaborationId, onMessageSend
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+          <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
             <Users className="text-blue-400" size={24} />
           </div>
           <div>
@@ -281,7 +281,7 @@ export default function MultiAgentCollaboration({ collaborationId, onMessageSend
           </div>
 
           {/* Collaboration Stats */}
-          <div className="bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-xl p-5">
+          <div className="bg-blue-900/10 border border-blue-800/30 rounded-xl p-5">
             <h4 className="font-medium mb-4">Collaboration Stats</h4>
             <div className="space-y-4">
               <div>
@@ -290,7 +290,7 @@ export default function MultiAgentCollaboration({ collaborationId, onMessageSend
                   <span className="font-medium">100%</span>
                 </div>
                 <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div className="w-full h-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                  <div className="w-full h-full bg-blue-500shadow-glow-blue" />
                 </div>
               </div>
               
@@ -300,7 +300,7 @@ export default function MultiAgentCollaboration({ collaborationId, onMessageSend
                   <span className="font-medium text-green-400">92%</span>
                 </div>
                 <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                  <div className="w-11/12 h-full bg-gradient-to-r from-green-500 to-emerald-500" />
+                  <div className="w-11/12 h-full bg-emerald-500 shadow-glow-green" />
                 </div>
               </div>
               
@@ -468,7 +468,7 @@ export default function MultiAgentCollaboration({ collaborationId, onMessageSend
                 <button
                   onClick={sendMessage}
                   disabled={!newMessage.trim()}
-                  className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
+                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-xl font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed self-end"
                 >
                   <Send size={20} />
                 </button>

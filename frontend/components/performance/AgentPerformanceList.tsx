@@ -18,7 +18,7 @@ export function AgentPerformanceList({ agents }: AgentPerformanceListProps) {
         <div key={idx} className="border border-gray-800 rounded-lg p-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue flex items-center justify-center">
                 <span className="font-bold">{agent.agent.charAt(0)}</span>
               </div>
               <div>

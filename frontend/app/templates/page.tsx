@@ -142,7 +142,7 @@ export default function TemplatesPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+            <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
               <Template className="text-blue-400" size={24} />
             </div>
             <div>
@@ -248,7 +248,7 @@ export default function TemplatesPage() {
                       {/* Header */}
                       <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center space-x-3">
-                          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+                          <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
                             <CategoryIcon className="text-blue-400" size={20} />
                           </div>
                           <div>
@@ -308,7 +308,7 @@ export default function TemplatesPage() {
                         
                         <Link
                           href={`/projects/new?template=${template.id}`}
-                          className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform group-hover:scale-105"
+                          className="flex items-center space-x-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform group-hover:scale-105"
                         >
                           <Rocket size={16} />
                           <span>Use Template</span>
@@ -342,9 +342,9 @@ export default function TemplatesPage() {
 
             {/* Create Custom Template */}
             <div className="mt-8">
-              <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/30 rounded-xl p-8">
+              <div className="bg-blue-900/15 border-2 border-blue-800/20 border border-blue-800/30 rounded-xl p-8">
                 <div className="text-center">
-                  <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full flex items-center justify-center">
+                  <div className="w-16 h-16 mx-auto mb-6 bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue rounded-full flex items-center justify-center">
                     <Zap className="text-blue-400" size={32} />
                   </div>
                   <h3 className="text-2xl font-bold mb-4">Can't find what you need?</h3>
@@ -354,7 +354,7 @@ export default function TemplatesPage() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <Link
                       href="/projects/new"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105"
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105"
                     >
                       Create Custom Template
                     </Link>

@@ -196,7 +196,7 @@ export default function ProjectPage() {
                   <Settings size={18} />
                   <span>Configure Agents</span>
                 </button>
-                <button className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg font-medium transition-colors">
+                <button className="w-full flex items-center justify-center space-x-2 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-500 hover:border-emerald-400 shadow-glow-green rounded-lg font-medium transition-colors">
                   <Download size={18} />
                   <span>Export All Files</span>
                 </button>

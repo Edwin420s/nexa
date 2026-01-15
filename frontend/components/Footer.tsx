@@ -7,7 +7,7 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid md:grid-cols-4 gap-8">
           <div className="space-y-4">
-            <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
+            <h3 className="text-2xl font-bold text-blue-400 text-glow-blue">
               Nexa
             </h3>
             <p className="text-gray-400">

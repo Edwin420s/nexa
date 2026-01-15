@@ -60,7 +60,7 @@ export default function TaskQueue({ tasks, onTaskAction }: TaskQueueProps) {
     <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+          <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
             <ListTodo className="text-blue-400" size={24} />
           </div>
           <div>
@@ -177,8 +177,8 @@ export default function TaskQueue({ tasks, onTaskAction }: TaskQueueProps) {
                   <div 
                     className={`h-full transition-all duration-300 ${
                       task.status === 'completed' 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-500'
-                        : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                        ? 'bg-emerald-500 shadow-glow-green'
+                        : 'bg-blue-500shadow-glow-blue'
                     }`}
                     style={{ width: `${task.progress}%` }}
                   />

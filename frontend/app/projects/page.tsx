@@ -78,7 +78,7 @@ export default function ProjectsPage() {
             </div>
             <Link 
               href="/projects/new" 
-              className="flex items-center space-x-2 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105"
+              className="flex items-center space-x-2 px-4 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105"
             >
               <Plus size={20} />
               <span>New Project</span>
@@ -112,14 +112,14 @@ export default function ProjectsPage() {
         {/* Empty State */}
         {projects.length === 0 && (
           <div className="text-center py-16">
-            <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-blue-900/20 to-purple-900/20 rounded-full flex items-center justify-center">
+            <div className="w-24 h-24 mx-auto mb-6 bg-blue-900/15 border-2 border-blue-800/20 rounded-full flex items-center justify-center">
               <Plus size={48} className="text-gray-500" />
             </div>
             <h3 className="text-xl font-semibold mb-2">No projects yet</h3>
             <p className="text-gray-400 mb-6">Create your first autonomous AI project</p>
             <Link 
               href="/projects/new" 
-              className="inline-flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105"
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105"
             >
               <Plus size={20} />
               <span>Create Project</span>

@@ -270,7 +270,7 @@ export default function SettingsPage() {
                   </div>
                 </div>
                 
-                <div className="bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-xl p-6">
+                <div className="bg-blue-900/10 border border-blue-800/30 rounded-xl p-6">
                   <h3 className="font-medium mb-2">API Usage Guidelines</h3>
                   <ul className="text-sm text-gray-300 space-y-2">
                     <li>• Keep API keys secure and never commit them to version control</li>
@@ -289,7 +289,7 @@ export default function SettingsPage() {
                   <h2 className="text-xl font-semibold mb-6">Billing & Usage</h2>
                   
                   <div className="grid md:grid-cols-2 gap-6 mb-8">
-                    <div className="p-6 bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-xl">
+                    <div className="p-6 bg-blue-900/10 border border-blue-800/30 rounded-xl">
                       <h3 className="font-medium mb-4">Current Plan</h3>
                       <div className="text-3xl font-bold mb-2">Pro</div>
                       <p className="text-gray-400 mb-4">$99/month • 1000 Gemini API calls included</p>
@@ -298,13 +298,13 @@ export default function SettingsPage() {
                       </button>
                     </div>
                     
-                    <div className="p-6 bg-gradient-to-br from-purple-900/20 to-purple-900/5 border border-purple-800/30 rounded-xl">
+                    <div className="p-6 bg-purple-900/10 border border-purple-800/30 rounded-xl">
                       <h3 className="font-medium mb-4">Usage This Month</h3>
                       <div className="text-3xl font-bold mb-2">{settings.billing.usage}/1000</div>
                       <p className="text-gray-400 mb-4">API calls used</p>
                       <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
                         <div 
-                          className="h-full bg-gradient-to-r from-purple-500 to-pink-500"
+                          className="h-full bg-purple-500 shadow-glow-purple"
                           style={{ width: `${(settings.billing.usage / 1000) * 100}%` }}
                         />
                       </div>
@@ -347,7 +347,7 @@ export default function SettingsPage() {
             <div className="mt-8 flex justify-end">
               <button
                 onClick={handleSave}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105"
+                className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105"
               >
                 <Save size={18} />
                 <span>Save Changes</span>

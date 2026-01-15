@@ -17,7 +17,7 @@ const LoginForm = dynamic(() => import('@/components/auth/LoginForm'), {
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-gray-950 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-900 p-4">
       <Suspense fallback={
         <div className="w-full max-w-md p-8 space-y-8 bg-gray-900 rounded-xl border border-gray-800">
           <div className="flex justify-center">

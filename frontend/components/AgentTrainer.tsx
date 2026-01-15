@@ -205,7 +205,7 @@ export default function AgentTrainer({ agentId, onTrainComplete }: AgentTrainerP
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+          <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
             <Brain className="text-blue-400" size={24} />
           </div>
           <div>
@@ -350,7 +350,7 @@ export default function AgentTrainer({ agentId, onTrainComplete }: AgentTrainerP
               <button
                 onClick={startTraining}
                 disabled={!selectedDataset || isTraining}
-                className="flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center space-x-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Play size={18} />
                 <span>Start Training</span>
@@ -414,10 +414,10 @@ export default function AgentTrainer({ agentId, onTrainComplete }: AgentTrainerP
                   <div 
                     className={`h-full transition-all duration-300 ${
                       run.status === 'completed' 
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                        ? 'bg-emerald-500 shadow-glow-green'
                         : run.status === 'failed'
                         ? 'bg-gradient-to-r from-red-500 to-orange-500'
-                        : 'bg-gradient-to-r from-blue-500 to-purple-500'
+                        : 'bg-blue-500shadow-glow-blue'
                     }`}
                     style={{ width: `${run.progress}%` }}
                   />

@@ -136,7 +136,7 @@ export default function ModelSelector({
                       {model.provider.toUpperCase()}
                     </span>
                     {model.recommendedFor.includes(taskType) && (
-                      <span className="px-2 py-1 rounded text-xs font-medium bg-gradient-to-r from-green-500 to-emerald-500">
+                      <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-500 shadow-glow-green">
                         Recommended
                       </span>
                     )}
@@ -221,7 +221,7 @@ export default function ModelSelector({
                       </span>
                       <h4 className="font-semibold">{model.name}</h4>
                       {model.recommendedFor.includes(taskType) && (
-                        <span className="px-2 py-1 rounded text-xs font-medium bg-gradient-to-r from-green-500 to-emerald-500">
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-emerald-500 shadow-glow-green">
                           Recommended
                         </span>
                       )}

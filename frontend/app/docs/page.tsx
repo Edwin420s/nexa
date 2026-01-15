@@ -83,7 +83,7 @@ export default function DocsPage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center space-x-3 mb-4">
-            <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+            <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
               <Book className="text-blue-400" size={24} />
             </div>
             <div>
@@ -146,7 +146,7 @@ export default function DocsPage() {
               </nav>
 
               {/* Help Section */}
-              <div className="mt-8 p-4 bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-xl">
+              <div className="mt-8 p-4 bg-blue-900/10 border border-blue-800/30 rounded-xl">
                 <div className="flex items-center space-x-3 mb-3">
                   <HelpCircle className="text-blue-400" size={20} />
                   <h3 className="font-medium">Need Help?</h3>
@@ -195,7 +195,7 @@ export default function DocsPage() {
             {activeCategoryData && (
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-6">
                 <div className="flex items-center space-x-3 mb-6">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+                  <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
                     <activeCategoryData.icon className="text-blue-400" size={24} />
                   </div>
                   <div>
@@ -274,7 +274,7 @@ export default function DocsPage() {
                               Nexa leverages Google's Gemini 3 models to power intelligent agent behavior. 
                               Learn how to optimize your usage and leverage advanced features.
                             </p>
-                            <div className="p-4 bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/30 rounded-lg mb-4">
+                            <div className="p-4 bg-blue-900/15 border-2 border-blue-800/20 border border-blue-800/30 rounded-lg mb-4">
                               <h4 className="font-medium mb-2">🚀 Gemini 3 Features Used</h4>
                               <div className="grid sm:grid-cols-2 gap-3 text-sm">
                                 <div className="flex items-center space-x-2">
@@ -325,7 +325,7 @@ export default function DocsPage() {
 
             {/* Quick Start Card */}
             <div className="mt-8">
-              <div className="bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-pink-900/20 border border-gray-800 rounded-xl p-8">
+              <div className="bg-blue-950/20 border-t border-blue-900/20 border border-gray-800 rounded-xl p-8">
                 <div className="text-center">
                   <h3 className="text-2xl font-bold mb-4">Ready to Start Building?</h3>
                   <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
@@ -334,7 +334,7 @@ export default function DocsPage() {
                   <div className="flex flex-col sm:flex-row gap-4 justify-center">
                     <a
                       href="/projects/new"
-                      className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105"
+                      className="px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105"
                     >
                       Start Tutorial
                     </a>

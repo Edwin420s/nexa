@@ -221,7 +221,7 @@ export default function InsightsPage() {
         </div>
 
         {/* Optimization Opportunities */}
-        <div className="bg-gradient-to-br from-blue-900/20 to-purple-900/20 border border-blue-800/30 rounded-xl p-6">
+        <div className="bg-blue-900/15 border-2 border-blue-800/20 border border-blue-800/30 rounded-xl p-6">
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="text-xl font-semibold">Optimization Opportunities</h2>
@@ -276,7 +276,7 @@ export default function InsightsPage() {
                 <div className="font-medium">Next Recommended Action</div>
                 <div className="text-sm text-gray-400">Implement model selection optimization</div>
               </div>
-              <button className="px-4 py-2 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg font-medium transition-colors">
+              <button className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-500 hover:border-emerald-400 shadow-glow-green rounded-lg font-medium transition-colors">
                 Apply Optimization
               </button>
             </div>

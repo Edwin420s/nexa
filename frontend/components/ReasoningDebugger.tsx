@@ -59,7 +59,7 @@ export default function ReasoningDebugger({ projectId, steps, onStepSelect }: Re
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="p-2 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+          <div className="p-2 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
             <Brain className="text-blue-400" size={24} />
           </div>
           <div>
@@ -141,7 +141,7 @@ export default function ReasoningDebugger({ projectId, steps, onStepSelect }: Re
             <div className="p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue flex items-center justify-center">
                     <span className="text-sm font-bold">{index + 1}</span>
                   </div>
                   <div>

@@ -107,7 +107,7 @@ export default function AIFeaturesPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-12 text-center">
-          <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 mb-6">
+          <div className="inline-flex items-center px-4 py-2 rounded-full bg-blue-500/20 border-2 border-blue-500/40 shadow-glow-blue border border-blue-500/30 mb-6">
             <Sparkles className="w-4 h-4 mr-2 text-blue-400" />
             <span className="text-sm font-medium text-blue-400">Gemini 3 Exclusive</span>
           </div>
@@ -144,7 +144,7 @@ export default function AIFeaturesPage() {
               </div>
 
               {/* Stats */}
-              <div className="mt-6 p-6 bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-xl">
+              <div className="mt-6 p-6 bg-blue-900/10 border border-blue-800/30 rounded-xl">
                 <div className="flex items-center space-x-3 mb-4">
                   <CpuIcon className="text-blue-400" size={24} />
                   <h3 className="font-medium">Performance Impact</h3>
@@ -156,7 +156,7 @@ export default function AIFeaturesPage() {
                       <span className="font-medium text-green-400">+300%</span>
                     </div>
                     <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                      <div className="w-3/4 h-full bg-gradient-to-r from-green-500 to-emerald-500" />
+                      <div className="w-3/4 h-full bg-emerald-500 shadow-glow-green" />
                     </div>
                   </div>
                   <div>
@@ -165,7 +165,7 @@ export default function AIFeaturesPage() {
                       <span className="font-medium text-blue-400">+45%</span>
                     </div>
                     <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                      <div className="w-2/3 h-full bg-gradient-to-r from-blue-500 to-purple-500" />
+                      <div className="w-2/3 h-full bg-blue-500shadow-glow-blue" />
                     </div>
                   </div>
                   <div>
@@ -174,7 +174,7 @@ export default function AIFeaturesPage() {
                       <span className="font-medium text-purple-400">-60%</span>
                     </div>
                     <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
-                      <div className="w-4/5 h-full bg-gradient-to-r from-purple-500 to-pink-500" />
+                      <div className="w-4/5 h-full bg-purple-500 shadow-glow-purple" />
                     </div>
                   </div>
                 </div>
@@ -187,7 +187,7 @@ export default function AIFeaturesPage() {
             {activeFeatureData && (
               <div className="bg-gray-900/50 border border-gray-800 rounded-xl p-8">
                 <div className="flex items-center space-x-4 mb-6">
-                  <div className="p-3 rounded-lg bg-gradient-to-br from-blue-500/20 to-purple-500/20">
+                  <div className="p-3 rounded-lg bg-blue-500/20 border-2 border-blue-500/30 shadow-glow-blue">
                     <activeFeatureData.icon className="text-blue-400" size={28} />
                   </div>
                   <div>
@@ -227,7 +227,7 @@ export default function AIFeaturesPage() {
                     </div>
                     
                     <h3 className="font-medium mb-4">Example Usage</h3>
-                    <div className="p-4 bg-gradient-to-br from-blue-900/20 to-blue-900/5 border border-blue-800/30 rounded-lg">
+                    <div className="p-4 bg-blue-900/10 border border-blue-800/30 rounded-lg">
                       <p className="text-gray-300">{activeFeatureData.example}</p>
                     </div>
                   </div>
@@ -327,7 +327,7 @@ async function use${activeFeatureData.name.replace(/\s+/g, '')}(task: string) {
         </div>
 
         {/* Integration Guide */}
-        <div className="bg-gradient-to-r from-blue-900/20 via-purple-900/20 to-pink-900/20 border border-gray-800 rounded-xl p-8">
+        <div className="bg-blue-950/20 border-t border-blue-900/20 border border-gray-800 rounded-xl p-8">
           <div className="text-center">
             <h2 className="text-2xl font-bold mb-4">Ready to Integrate?</h2>
             <p className="text-gray-300 mb-6 max-w-3xl mx-auto">
@@ -336,7 +336,7 @@ async function use${activeFeatureData.name.replace(/\s+/g, '')}(task: string) {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <a
                 href="/projects/new"
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 rounded-lg font-medium transition-all transform hover:scale-105"
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 shadow-glow-blue hover:shadow-glow-blue-lg rounded-lg font-medium transition-all transform hover:scale-105"
               >
                 Start Building
               </a>

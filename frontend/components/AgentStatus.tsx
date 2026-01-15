@@ -100,7 +100,7 @@ export default function AgentStatus({ agents, onAgentAction }: AgentStatusProps)
               </div>
               <div className="w-full bg-gray-800 h-2 rounded-full overflow-hidden">
                 <div 
-                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+                  className="h-full bg-blue-500shadow-glow-blue transition-all duration-300"
                   style={{ width: `${agent.progress}%` }}
                 />
               </div>
