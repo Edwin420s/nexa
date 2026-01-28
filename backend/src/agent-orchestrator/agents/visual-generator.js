@@ -78,7 +78,7 @@ Format the response as follows:
 - Format: [SVG, PNG, PDF, etc.]
 - Code: [if applicable, provide implementation code]
 
-## Asset 2: [Asset Name]
+## Asset 2: [Asset Name] 3
 ...
 
 Make the designs professional, clear, and aligned with modern design principles.`;
