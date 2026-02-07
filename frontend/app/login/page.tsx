@@ -18,9 +18,39 @@ export default function LoginPage() {
     e.preventDefault()
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    router.push('/dashboard')
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+      const response = await fetch(`${apiUrl}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.email,
+          password: formData.password
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Store token (backend returns it in data.token)
+        localStorage.setItem('token', data.data.token)
+        // Store user data (backend returns it in data.data.user)
+        localStorage.setItem('user', JSON.stringify(data.data.user))
+
+        // Redirect to dashboard
+        router.push('/dashboard')
+      } else {
+        // Show error message
+        alert(data.message || 'Login failed. Please check your credentials.')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      alert('Failed to connect to server. Please ensure the backend is running.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleGoogleLogin = () => {

@@ -34,10 +34,42 @@ export default function RegisterPage() {
 
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    setIsLoading(false)
-    router.push('/dashboard')
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+      const response = await fetch(`${apiUrl}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok && data.success) {
+        // Store token (backend returns it in data.data.token)
+        localStorage.setItem('token', data.data.token)
+        // Store user data (backend returns it in data.data.user)
+        localStorage.setItem('user', JSON.stringify(data.data.user))
+
+        // Redirect to dashboard
+        router.push('/dashboard')
+      } else {
+        // Log the full error for debugging
+        console.error('Registration failed:', data)
+        // Show error message
+        alert(data.message || data.error || 'Registration failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Registration error:', error)
+      alert('Failed to connect to server. Please ensure the backend is running.')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   return (

@@ -19,7 +19,8 @@ export default function SSEStream({ projectId, onEvent }: SSEStreamProps) {
 
   useEffect(() => {
     const connectSSE = () => {
-      const eventSource = new EventSource(`/api/projects/${projectId}/stream`)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+      const eventSource = new EventSource(`${apiUrl}/stream/projects/${projectId}`)
 
       eventSource.onopen = () => {
         console.log('SSE connection opened')
@@ -34,7 +35,7 @@ export default function SSEStream({ projectId, onEvent }: SSEStreamProps) {
             data: data.data,
             timestamp: new Date().toISOString()
           }
-          
+
           setEvents(prev => [sseEvent, ...prev].slice(0, 50))
           onEvent?.(sseEvent)
         } catch (error) {
@@ -46,7 +47,7 @@ export default function SSEStream({ projectId, onEvent }: SSEStreamProps) {
         console.error('SSE error:', error)
         setIsConnected(false)
         eventSource.close()
-        
+
         // Reconnect after 5 seconds
         setTimeout(connectSSE, 5000)
       }
