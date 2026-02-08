@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthService } from '../services/auth.service';
 import { BadRequestError, UnauthorizedError } from '../utils/errors';
+import { authenticate } from '../middleware/auth';
 import logger from '../utils/logger';
 
 export class AuthController {
@@ -58,6 +59,13 @@ export class AuthController {
    * Get current user
    */
   static async getCurrentUser(req: Request, res: Response, next: NextFunction) {
+    try {
+      // Apply authentication middleware
+      await authenticate(req, res, next);
+    } catch (error) {
+      return next(error);
+    }
+
     try {
       const user = await AuthService.getCurrentUser((req as any).user.id);
 

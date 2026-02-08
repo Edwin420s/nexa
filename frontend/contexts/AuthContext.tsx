@@ -10,6 +10,10 @@ interface User {
   email: string
   role?: string
   avatar?: string
+  subscription?: {
+    tier: 'free' | 'pro' | 'enterprise'
+    expiresAt?: Date
+  }
 }
 
 interface AuthContextType {
@@ -33,12 +37,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data } = await authApi.getCurrentUser()
-        if (data) {
-          setUser(data.user)
+        const token = localStorage.getItem('token')
+        if (!token) {
+          setLoading(false)
+          return
+        }
+
+        // Set token in API headers
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'}/auth/me`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        
+        if (response.ok) {
+          const data = await response.json()
+          if (data.data?.user) {
+            setUser(data.data.user)
+          }
+        } else {
+          // Token invalid, remove it
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
         }
       } catch (error) {
         console.error('Auth check failed:', error)
+        localStorage.removeItem('token')
+        localStorage.removeItem('user')
       } finally {
         setLoading(false)
       }
@@ -51,6 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await authApi.login(email, password)
     if (response.error) throw new Error(response.error)
     if (!response.data?.user) throw new Error('No user data received')
+    
+    // Store token and user data
+    localStorage.setItem('token', response.data.token)
+    localStorage.setItem('user', JSON.stringify(response.data.user))
+    
     setUser(response.data.user)
     router.push('/dashboard')
   }
@@ -59,14 +89,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const response = await authApi.register(data)
     if (response.error) throw new Error(response.error)
     if (!response.data?.user) throw new Error('Registration failed')
+    
+    // Store token and user data
+    localStorage.setItem('token', response.data.token)
+    localStorage.setItem('user', JSON.stringify(response.data.user))
+    
     setUser(response.data.user)
-    router.push('/onboarding')
+    router.push('/dashboard')
   }
 
   const logout = async () => {
-    await authApi.logout()
-    setUser(null)
-    router.push('/login')
+    try {
+      await authApi.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      setUser(null)
+      router.push('/login')
+    }
   }
 
   // Redirect to login if not authenticated and not on public route

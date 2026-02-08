@@ -18,10 +18,16 @@ export default function Home() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
-              href="/dashboard"
+              href="/try-platform"
               className="px-8 py-4 bg-blue-600 hover:bg-blue-700 border-2 border-blue-500 hover:border-blue-400 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-glow-blue hover:shadow-glow-blue-lg"
             >
-              Launch Platform
+              Try Platform Free
+            </Link>
+            <Link
+              href="/register"
+              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-700 border-2 border-emerald-500 hover:border-emerald-400 rounded-lg font-semibold text-lg transition-all transform hover:scale-105 shadow-glow-green hover:shadow-glow-green-lg"
+            >
+              Create Account
             </Link>
             <Link
               href="#features"

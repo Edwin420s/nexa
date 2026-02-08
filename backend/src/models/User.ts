@@ -46,7 +46,7 @@ const UserSchema = new Schema<IUser, IUserModel>({
     lowercase: true,
     trim: true,
     index: true,
-    match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Please provide a valid email']
+    match: [/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/, 'Please provide a valid email']
   },
   password: {
     type: String,

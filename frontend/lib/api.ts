@@ -1,6 +1,6 @@
 // API utility functions for frontend-backend communication
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || '/api'
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
 
 interface ApiResponse<T = any> {
   data?: T
@@ -13,10 +13,14 @@ async function fetchApi<T = any>(
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
   try {
+    // Get token from localStorage
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null
+    
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
         'Content-Type': 'application/json',
+        ...(token && { 'Authorization': `Bearer ${token}` }),
         ...options.headers,
       },
     })

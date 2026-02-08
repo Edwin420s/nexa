@@ -1,4 +1,4 @@
-import express, { Application, Request, Response, NextFunction } from 'express';
+import express, { Application, Request, Response } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import compression from 'compression';
@@ -17,6 +17,7 @@ import agentRoutes from './routes/agents';
 import analyticsRoutes from './routes/analytics';
 import sseRoutes from './routes/sse';
 import healthRoutes from './routes/health';
+import tryPlatformRoutes from './routes/tryPlatform.routes';
 
 // Import services
 import { connectDB, disconnectDB } from './services/mongodb';
@@ -47,7 +48,7 @@ const io = new SocketIOServer(server, {
 
 // Security middleware
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production'
+  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? undefined : false
 }));
 
 // Compression middleware
@@ -86,10 +87,11 @@ app.use(`/api/${API_VERSION}/projects`, projectRoutes);
 app.use(`/api/${API_VERSION}/agents`, agentRoutes);
 app.use(`/api/${API_VERSION}/analytics`, analyticsRoutes);
 app.use(`/api/${API_VERSION}/stream`, sseRoutes);
+app.use(`/api/${API_VERSION}/try-platform`, tryPlatformRoutes);
 app.use('/health', healthRoutes);
 
 // Root endpoint
-app.get('/', (req: Request, res: Response) => {
+app.get('/', (_req: Request, res: Response) => {
   res.status(200).json({
     success: true,
     message: 'Nexa API Server',

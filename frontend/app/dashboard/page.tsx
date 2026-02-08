@@ -2,40 +2,51 @@ import ProjectCard from '@/components/ProjectCard'
 import AnalyticsChart, { sampleAnalyticsData } from '@/components/AnalyticsChart'
 import { TrendingUp, Users, Folder, BarChart3 } from 'lucide-react'
 import Link from 'next/link'
+import { useAuth } from '@/contexts/AuthContext'
+import { useEffect, useState } from 'react'
 
 export default function DashboardPage() {
-  const projects = [
-    {
-      id: '1',
-      title: 'Autonomous Research Agent',
-      description: 'A multi-agent system for automated research using Gemini API',
-      status: 'running' as const,
-      createdAt: '2024-01-07T10:00:00Z',
-      updatedAt: '2024-01-07T12:30:00Z',
-      confidence: 0.85,
-      agentsCount: 4
-    },
-    {
-      id: '2',
-      title: 'Code Generation Pipeline',
-      description: 'Automated code generation for web applications',
-      status: 'completed' as const,
-      createdAt: '2024-01-06T14:00:00Z',
-      updatedAt: '2024-01-07T09:15:00Z',
-      confidence: 0.92,
-      agentsCount: 3
-    },
-    {
-      id: '3',
-      title: 'Documentation Generator',
-      description: 'AI-powered technical documentation creation',
-      status: 'paused' as const,
-      createdAt: '2024-01-05T09:00:00Z',
-      updatedAt: '2024-01-06T16:45:00Z',
-      confidence: 0.78,
-      agentsCount: 2
-    }
-  ]
+  const { user } = useAuth()
+  const [projects, setProjects] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  // Mock projects for now - replace with actual API call
+  useEffect(() => {
+    const mockProjects = [
+      {
+        id: '1',
+        title: 'Autonomous Research Agent',
+        description: 'A multi-agent system for automated research using Gemini API',
+        status: 'running' as const,
+        createdAt: '2024-01-07T10:00:00Z',
+        updatedAt: '2024-01-07T12:30:00Z',
+        confidence: 0.85,
+        agentsCount: 4
+      },
+      {
+        id: '2',
+        title: 'Code Generation Pipeline',
+        description: 'Automated code generation for web applications',
+        status: 'completed' as const,
+        createdAt: '2024-01-06T14:00:00Z',
+        updatedAt: '2024-01-07T09:15:00Z',
+        confidence: 0.92,
+        agentsCount: 3
+      },
+      {
+        id: '3',
+        title: 'Documentation Generator',
+        description: 'AI-powered technical documentation creation',
+        status: 'paused' as const,
+        createdAt: '2024-01-05T09:00:00Z',
+        updatedAt: '2024-01-06T16:45:00Z',
+        confidence: 0.78,
+        agentsCount: 2
+      }
+    ]
+    setProjects(mockProjects)
+    setLoading(false)
+  }, [])
 
   const stats = [
     { label: 'Active Projects', value: '8', icon: Folder, change: '+12%', color: 'text-blue-400' },
@@ -49,8 +60,20 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
-          <p className="text-gray-400">Monitor your autonomous agents and projects</p>
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Dashboard</h1>
+              <p className="text-gray-400">
+                Welcome back, {user?.name || 'User'}! Monitor your autonomous agents and projects
+              </p>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-gray-400">Account Tier</div>
+              <div className="text-lg font-semibold capitalize text-blue-400">
+                {user?.subscription?.tier || 'Free'}
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Stats Grid */}

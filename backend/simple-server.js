@@ -1,8 +1,5 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
+const express = require('express');
+const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,54 +29,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// Mock auth endpoint
-app.post('/api/v1/auth/register', (req, res) => {
-    res.json({
-        success: true,
-        message: 'Development mode - registration simulated',
-        data: {
-            user: {
-                id: 'mock-user-id',
-                email: req.body.email,
-                name: req.body.name
-            },
-            token: 'mock-jwt-token-dev-mode'
-        }
-    });
-});
-
-app.post('/api/v1/auth/login', (req, res) => {
-    res.json({
-        success: true,
-        message: 'Development mode - login simulated',
-        data: {
-            user: {
-                id: 'mock-user-id',
-                email: req.body.email
-            },
-            token: 'mock-jwt-token-dev-mode'
-        }
-    });
-});
-
-// Mock projects endpoint
-app.get('/api/v1/projects', (req, res) => {
-    res.json({
-        success: true,
-        data: {
-            projects: [
-                {
-                    id: 'mock-project-1',
-                    title: 'Sample Project',
-                    status: 'completed',
-                    createdAt: new Date()
-                }
-            ],
-            pagination: { total: 1, limit: 20, skip: 0 }
-        }
-    });
-});
-
 // Mock agents try endpoint - for free tier
 app.post('/api/v1/agents/try', (req, res) => {
     const { prompt, model = 'gemini-2.5-flash' } = req.body;
@@ -99,7 +48,15 @@ app.post('/api/v1/agents/try', (req, res) => {
     }
 
     // Mock AI response
-    const mockResponse = `This is a mock AI response to: "${prompt}". In a real implementation, this would connect to Google's Gemini AI service. The response would be generated using the ${model} model.`;
+    const mockResponse = `This is a mock AI response to: "${prompt}". In a real implementation, this would connect to Google's Gemini AI service. The response would be generated using the ${model} model.
+
+Here's what the AI would typically do:
+1. Analyze your request or question
+2. Generate a thoughtful response based on the context
+3. Provide helpful information or complete the task
+4. Format the response in a clear and readable way
+
+This mock response demonstrates that the frontend-backend connection is working properly. The real AI integration would use Google's Gemini API to generate actual intelligent responses.`;
 
     res.json({
         status: 'success',
@@ -108,22 +65,6 @@ app.post('/api/v1/agents/try', (req, res) => {
             model,
             tokensUsed: Math.floor(Math.random() * 100) + 50,
             tier: 'free'
-        }
-    });
-});
-
-app.post('/api/v1/projects', (req, res) => {
-    res.json({
-        success: true,
-        message: 'Development mode - project created (simulated)',
-        data: {
-            project: {
-                id: 'mock-project-id',
-                title: req.body.title,
-                goal: req.body.goal,
-                status: 'draft',
-                createdAt: new Date()
-            }
         }
     });
 });
@@ -145,7 +86,6 @@ app.listen(PORT, () => {
     console.log(`🌐 URL: http://localhost:${PORT}`);
     console.log(`⚠️  Mode: DEVELOPMENT (No Database)`);
     console.log(`✅ Health check: http://localhost:${PORT}/health`);
+    console.log(`🤖 Try endpoint: http://localhost:${PORT}/api/v1/agents/try`);
     console.log('='.repeat(60));
 });
-
-export default app;

@@ -1,16 +1,17 @@
-import express from 'express';
-import cors from 'cors';
-import dotenv from 'dotenv';
-
-dotenv.config();
-
-const app = express();
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const cors_1 = __importDefault(require("cors"));
+const dotenv_1 = __importDefault(require("dotenv"));
+dotenv_1.default.config();
+const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
-
 // Middleware
-app.use(cors());
-app.use(express.json());
-
+app.use((0, cors_1.default)());
+app.use(express_1.default.json());
 // Simple health check
 app.get('/health', (req, res) => {
     res.json({
@@ -20,7 +21,6 @@ app.get('/health', (req, res) => {
         environment: process.env.NODE_ENV || 'development'
     });
 });
-
 // Root endpoint
 app.get('/', (req, res) => {
     res.json({
@@ -31,7 +31,6 @@ app.get('/', (req, res) => {
         note: 'MongoDB and Redis not connected - using mock data'
     });
 });
-
 // Mock auth endpoint
 app.post('/api/v1/auth/register', (req, res) => {
     res.json({
@@ -47,7 +46,6 @@ app.post('/api/v1/auth/register', (req, res) => {
         }
     });
 });
-
 app.post('/api/v1/auth/login', (req, res) => {
     res.json({
         success: true,
@@ -61,7 +59,6 @@ app.post('/api/v1/auth/login', (req, res) => {
         }
     });
 });
-
 // Mock projects endpoint
 app.get('/api/v1/projects', (req, res) => {
     res.json({
@@ -79,28 +76,23 @@ app.get('/api/v1/projects', (req, res) => {
         }
     });
 });
-
 // Mock agents try endpoint - for free tier
 app.post('/api/v1/agents/try', (req, res) => {
     const { prompt, model = 'gemini-2.5-flash' } = req.body;
-    
     if (!prompt || prompt.trim().length === 0) {
         return res.status(400).json({
             success: false,
             message: 'Prompt is required'
         });
     }
-
     if (prompt.length > 1000) {
         return res.status(400).json({
             success: false,
             message: 'Prompt must be less than 1000 characters for free tier'
         });
     }
-
     // Mock AI response
     const mockResponse = `This is a mock AI response to: "${prompt}". In a real implementation, this would connect to Google's Gemini AI service. The response would be generated using the ${model} model.`;
-
     res.json({
         status: 'success',
         data: {
@@ -111,7 +103,6 @@ app.post('/api/v1/agents/try', (req, res) => {
         }
     });
 });
-
 app.post('/api/v1/projects', (req, res) => {
     res.json({
         success: true,
@@ -127,7 +118,6 @@ app.post('/api/v1/projects', (req, res) => {
         }
     });
 });
-
 // 404 handler
 app.use('*', (req, res) => {
     res.status(404).json({
@@ -136,7 +126,6 @@ app.use('*', (req, res) => {
         note: 'Running in development mode without database'
     });
 });
-
 app.listen(PORT, () => {
     console.log('='.repeat(60));
     console.log('🚀 Nexa Backend Server');
@@ -147,5 +136,4 @@ app.listen(PORT, () => {
     console.log(`✅ Health check: http://localhost:${PORT}/health`);
     console.log('='.repeat(60));
 });
-
-export default app;
+exports.default = app;

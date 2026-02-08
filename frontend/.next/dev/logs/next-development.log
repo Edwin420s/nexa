@@ -1,4 +1,1 @@
-[00:00:02.175] Server  LOG     ✓ Ready in 1560ms
-[00:00:39.585] Browser LOG     Sending registration request: {"email":"eduedwyn5@gmail.com","name":"Edwin","password":"90317743@Ed"}
-[00:00:39.585] Browser LOG     Registration failed: {"message":"Email already in use","stack":"Error: Email already in use\n    at Function.register (/home/skywalker/Projects/prj/nexa/backend/src/services/auth.service.ts:27:15)\n    at processTicksAndRejections (node:internal/process/task_queues:95:5)\n    at register (/home/skywalker/Projects/prj/nexa/backend/src/controllers/auth.controller.ts:18:31)","success":false}
-[00:00:46.469] Browser LOG     Sending registration request: {"email":"eduedwyn@gmail.com","name":"Edwin","password":"90317743@Ed"}
+[00:00:01.190] Server  LOG     ✓ Ready in 844ms

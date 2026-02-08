@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, FunctionDeclarationSchemaType } from '@google/generative-ai';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 import logger from '../utils/logger';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '');
@@ -45,7 +45,7 @@ export const generateContent = async (prompt: string, config?: {
     return {
       text,
       tokensUsed: response.usageMetadata?.totalTokenCount || 0,
-      functionCalls: response.functionCalls?.() || []
+      functionCalls: []
     };
   } catch (error: any) {
     logger.error('Gemini API error:', error);
@@ -87,9 +87,9 @@ export const AGENT_TOOLS = {
     name: 'search_web',
     description: 'Search the web for information',
     parameters: {
-      type: FunctionDeclarationSchemaType.OBJECT,
+      type: 'OBJECT',
       properties: {
-        query: { type: FunctionDeclarationSchemaType.STRING, description: 'Search query' }
+        query: { type: 'STRING', description: 'Search query' }
       },
       required: ['query']
     }
@@ -98,10 +98,10 @@ export const AGENT_TOOLS = {
     name: 'generate_code',
     description: 'Generate code based on specifications',
     parameters: {
-      type: FunctionDeclarationSchemaType.OBJECT,
+      type: 'OBJECT',
       properties: {
-        language: { type: FunctionDeclarationSchemaType.STRING },
-        specifications: { type: FunctionDeclarationSchemaType.STRING }
+        language: { type: 'STRING' },
+        specifications: { type: 'STRING' }
       },
       required: ['language', 'specifications']
     }
@@ -269,7 +269,7 @@ export class GeminiService {
       content: response.text(),
       confidence: 0.85, // Default confidence, can be enhanced
       tokensUsed: response.usageMetadata?.totalTokenCount || 0,
-      functionCalls: response.functionCalls?.() || []
+      functionCalls: []
     };
   }
 

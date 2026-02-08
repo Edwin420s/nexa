@@ -4,8 +4,10 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mail, Lock, Github } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export default function LoginPage() {
+  const { login } = useAuth()
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
@@ -13,41 +15,18 @@ export default function LoginPage() {
     password: ''
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setError('')
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
-      const response = await fetch(`${apiUrl}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
-      })
-
-      const data = await response.json()
-
-      if (response.ok && data.success) {
-        // Store token (backend returns it in data.token)
-        localStorage.setItem('token', data.data.token)
-        // Store user data (backend returns it in data.data.user)
-        localStorage.setItem('user', JSON.stringify(data.data.user))
-
-        // Redirect to dashboard
-        router.push('/dashboard')
-      } else {
-        // Show error message
-        alert(data.message || 'Login failed. Please check your credentials.')
-      }
-    } catch (error) {
-      console.error('Login error:', error)
-      alert('Failed to connect to server. Please ensure the backend is running.')
+      await login(formData.email, formData.password)
+      // AuthContext will handle redirection
+    } catch (error: any) {
+      setError(error.message || 'Login failed. Please check your credentials.')
     } finally {
       setIsLoading(false)
     }
@@ -125,6 +104,13 @@ export default function LoginPage() {
                 </button>
               </div>
             </div>
+
+            {/* Error Message */}
+            {error && (
+              <div className="bg-red-900/20 border border-red-800 rounded-lg p-3 text-red-400 text-sm">
+                {error}
+              </div>
+            )}
 
             {/* Submit Button */}
             <button

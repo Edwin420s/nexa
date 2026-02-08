@@ -4,7 +4,7 @@ import { UnauthorizedError, BadRequestError } from '../utils/errors';
 import logger from '../utils/logger';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '7d';
+const JWT_EXPIRE = process.env.JWT_EXPIRE || '7d';
 
 interface TokenPayload {
   userId: string;
@@ -21,20 +21,26 @@ export class AuthService {
     name: string;
   }): Promise<{ user: IUser; token: string }> {
     try {
+      logger.info('Attempting to register user with email:', userData.email);
+      
       // Check if user already exists
-      const existingUser = await User.findOne({ email: userData.email });
+      const existingUser = await User.findOne({ email: userData.email.toLowerCase().trim() });
+      logger.info('Existing user found:', existingUser ? 'YES' : 'NO');
+      
       if (existingUser) {
         throw new BadRequestError('Email already in use');
       }
 
       // Create new user
       const user = new User({
-        email: userData.email,
+        email: userData.email.toLowerCase().trim(),
         password: userData.password,
-        name: userData.name
+        name: userData.name.trim()
       });
 
+      logger.info('Saving new user...');
       await user.save();
+      logger.info('User saved successfully with ID:', user._id);
 
       // Generate JWT token
       const token = this.generateToken(user);
@@ -51,20 +57,27 @@ export class AuthService {
    */
   static async login(email: string, password: string): Promise<{ user: IUser; token: string }> {
     try {
+      logger.info('Attempting login for email:', email);
+      
       // Check if user exists
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ email: email.toLowerCase().trim() });
+      logger.info('User found for login:', user ? 'YES' : 'NO');
+      
       if (!user) {
         throw new UnauthorizedError('Invalid credentials');
       }
 
       // Check password
       const isMatch = await user.comparePassword(password);
+      logger.info('Password match:', isMatch ? 'YES' : 'NO');
+      
       if (!isMatch) {
         throw new UnauthorizedError('Invalid credentials');
       }
 
       // Generate JWT token
       const token = this.generateToken(user);
+      logger.info('Login successful for user ID:', user._id);
 
       return { user, token };
     } catch (error) {
@@ -95,7 +108,7 @@ export class AuthService {
     };
 
     const secret: jwt.Secret = JWT_SECRET;
-    const options: jwt.SignOptions = { expiresIn: JWT_EXPIRES_IN as any };
+    const options: jwt.SignOptions = { expiresIn: JWT_EXPIRE };
     return jwt.sign(payload, secret, options);
   }
 

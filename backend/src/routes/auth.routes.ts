@@ -7,6 +7,7 @@ const router = Router();
 
 router.post('/register', validate({ body: registerSchema }), AuthController.register);
 router.post('/login', validate({ body: loginSchema }), AuthController.login);
+router.get('/me', AuthController.getCurrentUser);
 router.post('/refresh-token', (req, res, next) => {
     // Refresh token implementation or placeholder
     res.status(501).json({ message: 'Not implemented' });
