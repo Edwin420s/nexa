@@ -144,3 +144,5 @@ test-results.xml
 
 # Lock files (keep package-lock.json but ignore yarn.lock if using npm)
 yarn.lock
+.env
+node_modules/
