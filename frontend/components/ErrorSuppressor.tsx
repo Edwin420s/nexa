@@ -26,7 +26,8 @@ export default function ErrorSuppressor() {
                 'Disconnected from polkadot',
                 'yoroi',
                 'eternl',
-                'dapp-connector'
+                'dapp-connector',
+                'Registration failed: {\"status\":\"success\"' // False positive from successful registration
             ]
 
             // Check if error matches any suppression pattern

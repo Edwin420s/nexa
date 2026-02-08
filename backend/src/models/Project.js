@@ -149,10 +149,7 @@ const ProjectSchema = new mongoose_1.Schema({
 ProjectSchema.index({ user: 1, status: 1 });
 ProjectSchema.index({ createdAt: -1 });
 ProjectSchema.index({ 'analytics.confidenceScore': -1 });
-// Add indexes
-ProjectSchema.index({ user: 1, status: 1 });
 ProjectSchema.index({ 'agents.status': 1 });
-ProjectSchema.index({ createdAt: -1 });
 // Add pre-save hook to set timestamps
 ProjectSchema.pre('save', function (next) {
     const now = new Date();
@@ -222,19 +219,6 @@ ProjectSchema.pre('remove', async function (next) {
     }
 });
 exports.Project = mongoose_1.default.model('Project', ProjectSchema);
-// Add indexes
-ProjectSchema.index({ user: 1, status: 1 });
-ProjectSchema.index({ 'agents.status': 1 });
-ProjectSchema.index({ createdAt: -1 });
-// Add pre-save hook to set timestamps
-ProjectSchema.pre('save', function (next) {
-    const now = new Date();
-    this.updatedAt = now;
-    if (!this.createdAt) {
-        this.createdAt = now;
-    }
-    next();
-});
 // Add method to add an agent to the project
 ProjectSchema.methods.addAgent = function (agent) {
     this.agents.push({

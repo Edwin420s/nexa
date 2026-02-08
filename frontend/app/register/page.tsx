@@ -54,7 +54,7 @@ export default function RegisterPage() {
 
       const data = await response.json()
 
-      if (response.ok && data.success) {
+      if (response.ok && (data.success || data.status === 'success')) {
         // Store token (backend returns it in data.data.token)
         localStorage.setItem('token', data.data.token)
         // Store user data (backend returns it in data.data.user)
@@ -64,7 +64,7 @@ export default function RegisterPage() {
         router.push('/dashboard')
       } else {
         // Log the full error for debugging
-        console.error('Registration failed:', data)
+        console.log('Registration failed:', data)
         // Show error message
         alert(data.message || data.error || 'Registration failed. Please try again.')
       }

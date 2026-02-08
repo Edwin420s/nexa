@@ -96,18 +96,16 @@ export class ValidationMiddleware {
 
         // Additional file validation
         if (rule.validateFiles && req.files) {
-          const fileErrors = this.validateUploadedFiles(req.files);
+          const fileErrors = ValidationMiddleware.validateUploadedFiles(req.files);
           if (fileErrors.length > 0) {
             errors.push(...fileErrors);
           }
         }
 
         // Check for security issues
-        if (typeof this.checkSecurityIssues === 'function') {
-          const securityErrors = this.checkSecurityIssues(req);
-          if (securityErrors.length > 0) {
-            errors.push(...securityErrors);
-          }
+        const securityErrors = ValidationMiddleware.checkSecurityIssues(req);
+        if (securityErrors.length > 0) {
+          errors.push(...securityErrors);
         }
 
         // If there are errors, return them
@@ -162,7 +160,7 @@ export class ValidationMiddleware {
       }
 
       // Check filename for security issues
-      if (this.hasMaliciousFilename(file.originalname)) {
+      if (ValidationMiddleware.hasMaliciousFilename(file.originalname)) {
         errors.push(`Filename ${file.originalname} contains potentially malicious characters`);
       }
 
@@ -229,7 +227,7 @@ export class ValidationMiddleware {
       // }
 
       if (typeof value === 'object') {
-        if (this.checkObjectForSqlInjection(value)) {
+        if (ValidationMiddleware.checkObjectForSqlInjection(value)) {
           return true;
         }
       }
