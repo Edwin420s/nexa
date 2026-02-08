@@ -149,3 +149,7 @@ node_modules/
 .env
 .env.Local
 node_modules/
+.env
+.env.local
+.env.Local
+node_modules/
