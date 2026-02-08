@@ -146,3 +146,6 @@ test-results.xml
 yarn.lock
 .env
 node_modules/
+.env
+.env.Local
+node_modules/
