@@ -112,7 +112,8 @@ const ProjectSchema = new Schema<IProject>({
     status: {
       type: String,
       enum: ['idle', 'running', 'completed', 'failed'],
-      default: 'idle'
+      default: 'idle',
+      index: true
     },
     outputs: [{
       timestamp: {
@@ -222,7 +223,8 @@ const ProjectSchema = new Schema<IProject>({
     currentPhase: {
       type: String,
       enum: ['planning', 'research', 'synthesis', 'build', 'evaluation'],
-      default: 'planning'
+      default: 'planning',
+      index: true
     },
     currentIteration: {
       type: Number,
@@ -261,12 +263,6 @@ const ProjectSchema = new Schema<IProject>({
   }
 });
 
-// Indexes for performance
-ProjectSchema.index({ user: 1, status: 1 });
-ProjectSchema.index({ user: 1, createdAt: -1 });
-ProjectSchema.index({ status: 1, createdAt: -1 });
-ProjectSchema.index({ 'analytics.averageConfidence': -1 });
-ProjectSchema.index({ 'state.currentPhase': 1 });
 
 // Pre-save middleware to calculate average confidence
 ProjectSchema.pre('save', function (next) {

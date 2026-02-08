@@ -36,16 +36,20 @@ export default function RegisterPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api/v1'
+      const payload = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password
+      }
+
+      console.log('Sending registration request:', payload)
+
       const response = await fetch(`${apiUrl}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password
-        })
+        body: JSON.stringify(payload)
       })
 
       const data = await response.json()

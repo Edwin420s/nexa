@@ -45,6 +45,7 @@ const UserSchema = new Schema<IUser, IUserModel>({
     unique: true,
     lowercase: true,
     trim: true,
+    index: true,
     match: [/^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/, 'Please provide a valid email']
   },
   password: {
@@ -113,7 +114,8 @@ const UserSchema = new Schema<IUser, IUserModel>({
   },
   isActive: {
     type: Boolean,
-    default: true
+    default: true,
+    index: true
   },
   isEmailVerified: {
     type: Boolean,
@@ -136,10 +138,6 @@ const UserSchema = new Schema<IUser, IUserModel>({
   }
 });
 
-// Indexes for performance
-UserSchema.index({ email: 1 });
-UserSchema.index({ createdAt: -1 });
-UserSchema.index({ 'usage.lastActive': -1 });
 
 // Hash password before saving
 UserSchema.pre('save', async function (next) {

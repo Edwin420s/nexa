@@ -12,7 +12,7 @@ export class AppError extends Error {
 
 export class ValidationError extends AppError {
   constructor(message: string) {
-    super(message, 400);
+    super(message, 422);
   }
 }
 

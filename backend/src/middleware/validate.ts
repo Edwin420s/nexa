@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { ValidationError } from '../utils/errors';
 import { validate } from '../utils/validation';
 import Joi from 'joi';
+import logger from '../utils/logger';
 
 export const validateRequest = (schema: Joi.ObjectSchema) => {
     return (req: Request, res: Response, next: NextFunction) => {
@@ -9,6 +10,10 @@ export const validateRequest = (schema: Joi.ObjectSchema) => {
             req.body = validate(schema, req.body);
             next();
         } catch (error: any) {
+            logger.error('Validation failed:', {
+                error: error.message,
+                body: req.body
+            });
             next(new ValidationError(error.message));
         }
     };

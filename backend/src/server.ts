@@ -11,7 +11,7 @@ import { Server as SocketIOServer } from 'socket.io';
 dotenv.config();
 
 // Import routes
-import authRoutes from './routes/auth';
+import authRoutes from './routes/auth.routes';
 import projectRoutes from './routes/projects';
 import agentRoutes from './routes/agents';
 import analyticsRoutes from './routes/analytics';
